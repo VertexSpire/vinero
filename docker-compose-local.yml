@@ -1,0 +1,8 @@
+version: "3.0"
+services:
+  webapp:
+    image: "thm-web-app"
+    build:
+      context: .
+    env_file: /path/to/your.env # switch this to wherever your .env file is. Absolute or relative paths are permissible
+    network_mode: host # this is for local testing, mostly because redis and mongo are on host. switch it out or completely remove it otherwise

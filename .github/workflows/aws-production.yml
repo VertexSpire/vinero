@@ -1,0 +1,41 @@
+on:
+  workflow_dispatch:
+
+name: '[Production] Build & Deploy to AWS'
+
+jobs:
+  verify-access:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check if user is admin
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { actor, repo: { owner, repo } } = context
+          const user = await github.rest.repos.getCollaboratorPermissionLevel({
+            owner,
+            repo,
+            username: actor
+          })
+          if (user.data.permission !== 'admin') {
+            throw new Error('This workflow can only be run by a repository admin.')
+          }
+
+  build-and-deploy:
+    name: trigger-deploy
+    needs: verify-access
+    uses: ./.github/workflows/aws-common.yml
+    with:
+      TASK_DEFINITON_FILE_NAME: 'ecs-task-definition.json'
+      DEPLOY_TARGET: 'production'
+      ECR_REPOSITORY: 'thm-web-app'
+      CONTAINER_NAME: 'thm-web-app'
+      SERVICE_NAME: 'thm-web-app-service'
+      CLUSTER_NAME: 'thm-web-app-cluster'
+      ENV_URL: 'https://tryhackme.com'
+    secrets:
+      TRIGGER_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      TRIGGER_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      TRIGGER_ASSETS_S3_BUCKET_ADDRESS: ${{ secrets.PROD_ASSETS_S3_BUCKET_ADDRESS }}
+      TRIGGER_ASSETS_S3_BUCKET_NAME: ${{ secrets.PROD_ASSETS_S3_BUCKET_NAME }} 

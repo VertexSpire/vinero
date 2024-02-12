@@ -1,0 +1,115 @@
+on:
+  workflow_call:
+    inputs:
+      TASK_DEFINITON_FILE_NAME:
+        required: true
+        type: string
+      DEPLOY_TARGET:
+        required: true
+        type: string
+      ECR_REPOSITORY:         
+        required: true
+        type: string
+      CONTAINER_NAME:        
+        required: true
+        type: string
+      SERVICE_NAME:        
+        required: true
+        type: string
+      CLUSTER_NAME:        
+        required: true
+        type: string
+      ENV_URL:
+        required: true
+        type: string
+    secrets:
+      TRIGGER_AWS_ACCESS_KEY_ID:
+        required: true
+      TRIGGER_AWS_SECRET_ACCESS_KEY:
+        required: true
+      TRIGGER_ASSETS_S3_BUCKET_ADDRESS:
+        required: true
+      TRIGGER_ASSETS_S3_BUCKET_NAME:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      ecr-image-name: ${{ steps.build-image.outputs.image }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@tryhackme'
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.TRIGGER_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.TRIGGER_AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+        mask-aws-account-id: 'false'
+        
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{inputs.ECR_REPOSITORY}}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build a docker container and push it to ECR so that it can be deployed to ECS.
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --build-arg NODE_ENV=prod\
+         --build-arg AWS_ACCESS_KEY_ID=${{ secrets.TRIGGER_AWS_ACCESS_KEY_ID }}\
+         --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.TRIGGER_AWS_SECRET_ACCESS_KEY }}\
+         --build-arg ASSETS_S3_BUCKET_ADDRESS=${{ secrets.TRIGGER_ASSETS_S3_BUCKET_ADDRESS }}\
+         --build-arg ASSETS_S3_BUCKET_NAME=${{ secrets.TRIGGER_ASSETS_S3_BUCKET_NAME }}
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    runs-on: ubuntu-latest
+    
+    needs: build
+
+    environment: 
+      name: ${{ inputs.DEPLOY_TARGET }}
+      url: ${{ inputs.ENV_URL }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.TRIGGER_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.TRIGGER_AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-definition
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ inputs.TASK_DEFINITON_FILE_NAME }}
+        container-name: ${{ inputs.CONTAINER_NAME }}
+        image: ${{ needs.build.outputs.ecr-image-name }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-definition.outputs.task-definition }}
+        service: ${{ inputs.SERVICE_NAME }}
+        cluster: ${{ inputs.CLUSTER_NAME }}
+        wait-for-service-stability: false

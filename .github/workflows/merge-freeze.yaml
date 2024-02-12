@@ -1,0 +1,88 @@
+name: Toggle Merge Freeze
+on:
+  schedule: 
+    - cron: '0 17 * * 2' # This will run at 17:00 GMT every Tuesday
+    - cron: '0 17 * * 3' # This will run at 17:00 GMT every Wednesday 
+    
+jobs:
+  toggle-merge-freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set branch protection
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.MERGE_FREEZE_PAT }}
+          script: |
+            const dayOfWeek = new Date().getDay();
+            const isTuesday = dayOfWeek === 2;
+            const isWednesday = dayOfWeek === 3;
+            
+            const owner = 'tryhackme';
+            
+            const repos = ['tryhackme', 'thm-platform-client'];
+            
+            async function updateMergeRestriction(repo, branch, enableRestrictions) {
+              console.log(`${enableRestrictions ? 'Enabling' : 'Disabling'} merge restrictions for ${repo} ${branch}`);
+              const { data: currentBranchProtection } =
+                await github.rest.repos.getBranchProtection({
+                  owner,
+                  repo,
+                  branch,
+                });
+              await github.rest.repos.updateBranchProtection({
+                owner,
+                repo,
+                branch,
+                enforce_admins: currentBranchProtection.enforce_admins?.enabled ?? false,
+                required_pull_request_reviews:
+                  currentBranchProtection.required_pull_request_reviews
+                    ? {
+                        dismiss_stale_reviews:
+                          currentBranchProtection.required_pull_request_reviews
+                            .dismiss_stale_reviews,
+                        require_code_owner_reviews:
+                          currentBranchProtection.required_pull_request_reviews
+                            .require_code_owner_reviews,
+                        required_approving_review_count:
+                          currentBranchProtection.required_pull_request_reviews
+                            .required_approving_review_count,
+                        require_last_push_approval:
+                          currentBranchProtection.required_pull_request_reviews
+                            .require_last_push_approval,
+                      }
+                    : null,
+                required_status_checks: currentBranchProtection.required_status_checks
+                  ? {
+                      strict: currentBranchProtection.required_status_checks.strict,
+                      contexts: currentBranchProtection.required_status_checks.contexts,
+                      // Both the above and below parameters are technically "allowed"
+                      // but the API doesn't allow us to set them both.
+                      // contexts are considered "depricated", but thats what github API
+                      // returns from github.rest.repos.getBranchProtection
+                      // so if things break consider switching to the below one
+                      // checks: currentBranchProtection.required_status_checks.checks,
+                    }
+                  : null,
+                restrictions: enableRestrictions
+                  ? {
+                      users: [],
+                      teams: [],
+                    }
+                  : null,
+              });
+            }
+            
+            if (isTuesday) {
+              for (const repo of repos) {
+                await updateMergeRestriction(repo, 'development', true);
+              }
+            } else if (isWednesday) {
+              for (const repo of repos) {
+                await updateMergeRestriction(repo, 'development', false);
+              }
+            }
+
+
+
+
+            

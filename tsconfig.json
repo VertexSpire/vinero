@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["app/api/v2/src/*"],
+      "tests/*": ["app/api/v2/tests/*"]
+    },
+    "sourceMap": true,
+    "outDir": "./app/api/v2/dist",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true
+  },
+  "include": ["./app/api/v2/src/**/*"]
+}

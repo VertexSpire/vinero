@@ -1,0 +1,36 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es2021": true,
+    "node": true,
+    "mocha": true,
+    "jquery": true
+  },
+  "extends": ["google", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ]
+  },
+  "globals": {
+    "csrfProtection": true,
+    "$": true
+  },
+  "plugins": ["react"],
+  "rules": {
+    "require-jsdoc": ["off", "always"],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|reject" }],
+    "new-cap": ["error", { "capIsNewExceptionPattern": "\\.Router|Schema|ObjectId|DataTable$" }],
+    "max-len": ["error", { "code": 120, "ignorePattern": "\\s.+=\\s*require\\s*\\(" }],
+    "no-console": "error",
+    "no-undef": "error"
+  }
+}

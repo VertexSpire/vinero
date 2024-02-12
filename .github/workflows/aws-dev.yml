@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - development
+
+name: '[Development] Build & Deploy to AWS'
+
+jobs:
+  build-and-deploy:
+    uses: ./.github/workflows/aws-common.yml
+    with:
+      TASK_DEFINITON_FILE_NAME: 'ecs-task-definition-dev.json'      
+      DEPLOY_TARGET: 'development'
+      ECR_REPOSITORY: 'thm-web-app-dev'
+      CONTAINER_NAME: 'thm-web-app-dev'
+      SERVICE_NAME: 'thm-web-app-service-dev'
+      CLUSTER_NAME: 'thm-web-app-cluster-dev'
+      ENV_URL: 'https://development.tryhackme.site'
+    secrets:
+      TRIGGER_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+      TRIGGER_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+      TRIGGER_ASSETS_S3_BUCKET_ADDRESS: ${{ secrets.DEV_ASSETS_S3_BUCKET_ADDRESS }}
+      TRIGGER_ASSETS_S3_BUCKET_NAME: ${{ secrets.DEV_ASSETS_S3_BUCKET_NAME }} 

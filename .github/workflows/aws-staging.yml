@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - master
+
+name: '[Staging] Build & Deploy to AWS'
+
+jobs:
+  build-and-deploy:
+    uses: ./.github/workflows/aws-common.yml
+    with:
+      TASK_DEFINITON_FILE_NAME: 'ecs-task-definition-staging.json'
+      DEPLOY_TARGET: 'staging'
+      ECR_REPOSITORY: 'thm-web-app-staging'
+      CONTAINER_NAME: 'thm-web-app-staging'
+      SERVICE_NAME: 'thm-web-app-service-stg'
+      CLUSTER_NAME: 'thm-web-app-cluster-staging'
+      ENV_URL: 'https://staging.tryhackme.site'
+    secrets:
+      TRIGGER_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+      TRIGGER_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+      TRIGGER_ASSETS_S3_BUCKET_ADDRESS: ${{ secrets.STAGING_ASSETS_S3_BUCKET_ADDRESS }}
+      TRIGGER_ASSETS_S3_BUCKET_NAME: ${{ secrets.STAGING_ASSETS_S3_BUCKET_NAME }} 

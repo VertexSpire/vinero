@@ -1,0 +1,9 @@
+version: "3.0"
+services:
+  webapp:
+    image: "thm-web-app"
+    build:
+      context: .
+    env_file: /path/to/your.env  # switch this to wherever your .env file is. Absolute or relative paths are permissible
+    ports:
+      - "1337:1337"  # if you try mapping to another port (on host) styling 100% breaks

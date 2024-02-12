@@ -1,0 +1,210 @@
+name: Quality Checks
+
+on:
+  push:
+    branches:
+      - development
+  pull_request:
+    branches:
+      - development
+
+env:
+  RUN_CACHE_KEY: cache-${{ github.run_id }}-${{ github.run_attempt }}
+  RUN_CACHE_PATH: |
+    ${{ github.workspace }}/**/*
+    ~/.env
+      
+jobs:
+  setup:
+    runs-on:
+      labels: very-big
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: npm install --foreground-scripts
+      env:
+        MONGOMS_DEBUG: 1
+
+    - name: Transpile API sub-module
+      run: npm run transpile
+
+    - name: Set Up Dummy ENV Vars
+      id: environmental-vars
+      env:
+        TEST_DB_URL: ${{ secrets.TEST_DB_URL }}
+        TEST_REDIS_PWD: ${{ secrets.TEST_REDIS_PWD }}
+        TEST_REDIS_IP: ${{ secrets.TEST_REDIS_IP }}
+      run: |
+        # use sampple.env for dummy environmental variables
+        cp ./sample.env ~/.env
+        # replace vars the .env file with the vars in secrets
+        sed -i "/DB_URL=/c\DB_URL=$TEST_DB_URL" ~/.env
+        sed -i "/REDIS_IP=/c\REDIS_IP=$TEST_REDIS_IP" ~/.env
+        sed -i "/REDIS_PASSWORD=/c\REDIS_PASSWORD=$TEST_REDIS_PWD" ~/.env
+
+    - uses: actions/cache/save@v4
+      with:
+        key: ${{ env.RUN_CACHE_KEY }}
+        path: ${{ env.RUN_CACHE_PATH }}
+
+
+  circular-dependencies:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push'
+    steps:  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}
+          path: ${{ env.RUN_CACHE_PATH }}
+
+      - name: Checking for circular dependencies
+        run: npx madge --circular .
+
+  # lint:
+  #   needs: setup
+  #   runs-on: ubuntu-latest
+  #   steps:  
+  #     - name: Get Cached Checkout
+  #       uses: actions/cache/restore@v4
+  #       with:
+  #         key: ${{ env.RUN_CACHE_KEY }}
+  #         path: ${{ env.RUN_CACHE_PATH }}
+  #     - id: lint
+  #       name: Check ESLint
+  #       run: |
+  #         npm run lint
+
+  prettier:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push'
+    steps:  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}
+          path: ${{ env.RUN_CACHE_PATH }}      
+
+      - id: prettier
+        name: Check Prettier formatting
+        run: |
+          npm run prettier:check
+
+  legacy-unit-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push'
+    steps:  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}
+          path: ${{ env.RUN_CACHE_PATH }}
+
+      - name: Unit Tests
+        run: npm run u-test
+
+  legacy-db-integration-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push'
+    steps:  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}
+          path: ${{ env.RUN_CACHE_PATH }}
+
+      - name: DB Integration Tests
+        run: npm run i-test-db
+
+  legacy-route-integration-tests:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push'
+    steps:  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}
+          path: ${{ env.RUN_CACHE_PATH }}
+
+      - name: Route Integration Tests
+        run: npm run i-test-routes
+
+  tests:
+    needs: setup
+    runs-on:
+      labels: very-big
+    steps:  
+      - uses: actions/setup-node@v4
+        with:
+            node-version: 20
+
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}
+          path: ${{ env.RUN_CACHE_PATH }}
+          
+      - name: Sub-module Tests
+        # env:
+          # NODE_OPTIONS: "--max_old_space_size=12288"
+          # MONGOMS_DEBUG: 1
+        run: npm run test:ci
+
+      - uses: actions/cache/save@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}-with-test-coverage
+          path: ${{ env.RUN_CACHE_PATH }}
+
+  sonarcloud:
+    name: Analyse with SonarCloud
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Cached Checkout
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ env.RUN_CACHE_KEY }}-with-test-coverage
+          path: ${{ env.RUN_CACHE_PATH }}
+
+      - name: Append Package JSON Version to Sonar Config
+        run: |
+          echo "sonar.projectVersion=$(cat package.json | grep version | head -1  | awk -F: '{ print $2 }' | sed 's/[", ]//g')" >> sonar-project.properties
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          
