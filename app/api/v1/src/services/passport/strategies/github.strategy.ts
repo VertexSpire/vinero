@@ -61,6 +61,7 @@ export class GitHubStrategy implements PassportStrategy {
    * @param profile - User profile from GitHub.
    * @param done - Passport done function.
    */
+  // Handle the GitHub passport strategy callback.
   private async handleGitHubCallback(
     req: any, // Adjust type based on your Express request object
     accessToken: string,
@@ -69,19 +70,10 @@ export class GitHubStrategy implements PassportStrategy {
     done: VerifyFunction,
   ): Promise<void> {
     try {
-      const user: User = await this.validateAndRetrieveUser(profile);
+      const user: User = await this.userService.authenticateUserByGitHub('githubUserId', profile);
       return done(null, user);
     } catch (error) {
       return done(error, false);
     }
-  }
-
-  /**
-   * Validate and retrieve a user based on the GitHub profile.
-   * @param profile - User profile from GitHub.
-   * @returns The authenticated user.
-   */
-  private async validateAndRetrieveUser(profile: any): Promise<User> {
-    // Your logic to find or create user based on GitHub profile
   }
 }

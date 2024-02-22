@@ -61,6 +61,7 @@ export class FacebookStrategy implements PassportStrategy {
    * @param profile - User profile from Facebook.
    * @param done - Passport done function.
    */
+  // Handle the Facebook passport strategy callback.
   private async handleFacebookCallback(
     req: any, // Adjust type based on your Express request object
     accessToken: string,
@@ -69,19 +70,10 @@ export class FacebookStrategy implements PassportStrategy {
     done: VerifyFunction,
   ): Promise<void> {
     try {
-      const user: User = await this.validateAndRetrieveUser(profile);
+      const user: User = await this.userService.authenticateUserByFacebook('facebookUserId', profile);
       return done(null, user);
     } catch (error) {
       return done(error, false);
     }
-  }
-
-  /**
-   * Validate and retrieve a user based on the Facebook profile.
-   * @param profile - User profile from Facebook.
-   * @returns The authenticated user.
-   */
-  private async validateAndRetrieveUser(profile: any): Promise<User> {
-    // Your logic to find or create user based on Facebook profile
   }
 }

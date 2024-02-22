@@ -66,6 +66,7 @@ export class GoogleStrategy implements PassportStrategy {
    * @param profile - User profile from Google.
    * @param done - Passport done function.
    */
+  // Handle the Google passport strategy callback.
   private async handleGoogleCallback(
     accessToken: string,
     refreshToken: string,
@@ -73,46 +74,10 @@ export class GoogleStrategy implements PassportStrategy {
     done: VerifyCallback,
   ): Promise<void> {
     try {
-      const user: User = await this.validateAndRetrieveUser(profile);
+      const user: User = await this.userService.authenticateUserByGoogle('googleUserId', profile);
       return done(null, user);
     } catch (error) {
       return done(error, false);
     }
-  }
-
-  /**
-   * Validate and retrieve a user based on the Google profile.
-   *
-   * This function validates the Google profile, creates or updates a user, and returns the authenticated user.
-   *
-   * @param profile - User profile from Google.
-   * @returns The authenticated user.
-   */
-  private async validateAndRetrieveUser(profile: Profile): Promise<User> {
-    // Extract relevant information from the Google profile
-    const googleUserId = 'google-' + profile.id;
-    const username = profile.displayName || profile.emails[0]?.value || '';
-
-    // Check if the user already exists based on Google user ID
-    let existingUser = await this.userService.findUserByGoogleId(googleUserId);
-
-    // If the user doesn't exist, create a new user
-    if (!existingUser) {
-      // Additional logic to extract more information from the Google profile if needed
-      const email = profile.emails[0]?.value || '';
-
-      // Create a new user with the extracted information
-      const newUser: User = {
-        id: googleUserId,
-        username,
-        email,
-        // Additional fields can be populated here based on the Google profile
-      };
-
-      // Save the new user to the database
-      existingUser = await this.userService.createUser(newUser);
-    }
-
-    return existingUser;
   }
 }

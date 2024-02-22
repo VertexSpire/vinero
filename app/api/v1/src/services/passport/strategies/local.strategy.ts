@@ -1,4 +1,3 @@
-// src/services/passport/strategies/local.strategy.ts
 import { Strategy as LocalStrategy, StrategyOptions } from 'passport-local';
 import { PassportStatic } from 'passport';
 import { User } from '../models/User';
@@ -61,10 +60,37 @@ export class LocalStrategy implements PassportStrategy {
     done: (error: any, user?: any, info?: any) => void,
   ): Promise<void> {
     try {
-      const user: User | null = await this.userService.authenticateUser(username, password);
-      return user ? done(null, user) : done(null, false, { message: 'Invalid username or password' });
+      const user: User | null = await this.validateAndRetrieveUser(username, password);
+
+      if (!user) {
+        return done(null, false, { message: 'Invalid username or password' });
+      }
+
+      return done(null, user);
     } catch (error) {
       return done(error, false);
     }
+  }
+
+  /**
+   * Validate and retrieve a user based on the Local authentication.
+   * @param username - User's username or email.
+   * @param password - User's password.
+   * @returns The authenticated user.
+   */
+  private async validateAndRetrieveUser(username: string, password: string): Promise<User | null> {
+    const user: User | null = await this.userService.findUserByUsername(username);
+
+    if (!user) {
+      return null;
+    }
+
+    const isPasswordValid = await this.userService.validatePassword(user, password);
+
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    return user;
   }
 }

@@ -66,19 +66,10 @@ export class TwitterStrategy implements PassportStrategy {
     done: VerifyFunction,
   ): Promise<void> {
     try {
-      const user: User = await this.validateAndRetrieveUser(profile);
+      const user: User = await this.userService.authenticateUserByTwitter('twitterUserId', profile);
       return done(null, user);
     } catch (error) {
       return done(error, false);
     }
-  }
-
-  /**
-   * Validate and retrieve a user based on the Twitter profile.
-   * @param profile - User profile from Twitter.
-   * @returns The authenticated user.
-   */
-  private async validateAndRetrieveUser(profile: any): Promise<User> {
-    // Your logic to find or create user based on Twitter profile
   }
 }

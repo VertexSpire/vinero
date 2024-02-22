@@ -59,6 +59,11 @@ export class JwtStrategy implements PassportStrategy {
   ): Promise<void> {
     try {
       const user: User = await this.validateAndRetrieveUser(payload);
+
+      if (!user) {
+        return done(null, false, { message: 'Invalid username or password' });
+      }
+
       return done(null, user);
     } catch (error) {
       return done(error, false);
@@ -67,10 +72,19 @@ export class JwtStrategy implements PassportStrategy {
 
   /**
    * Validate and retrieve a user based on the JWT payload.
+   *
+   * This function validates the JWT payload and retrieves the user if it exists.
+   *
    * @param payload - Decoded JWT payload.
-   * @returns The authenticated user.
+   * @returns The authenticated user if found; otherwise, returns null.
    */
-  private async validateAndRetrieveUser(payload: any): Promise<User> {
-    // Your logic to find or create user based on JWT payload
+  private async validateAndRetrieveUser(payload: any): Promise<User | null> {
+    // Extract user ID from the JWT payload
+    const userId = payload.sub;
+
+    // Check if the user exists based on the user ID
+    const existingUser = await this.userService.findUserById(userId);
+
+    return existingUser;
   }
 }
