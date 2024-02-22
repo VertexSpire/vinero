@@ -9,8 +9,7 @@ import { AuthStrategies } from '../../common/enums/auth.enum';
  * Service for managing Passport authentication strategies.
  */
 export class PassportService {
-  
-    /**
+  /**
    * The strategy factory used to create authentication strategy instances.
    */
   private readonly strategyFactory: StrategyFactory;
@@ -25,21 +24,18 @@ export class PassportService {
    * @param passport - The Passport instance.
    * @param strategyFactory - The StrategyFactory instance.
    */
-  constructor(
-    passport: PassportStatic,
-    strategyFactory: StrategyFactory
-    ) {
+  constructor(passport: PassportStatic, strategyFactory: StrategyFactory) {
     this.strategyFactory = strategyFactory;
     this.passport = passport;
     // Initialize and configure authentication strategies
     this.initializeAuthStrategies(passport);
   }
 
-   /**
+  /**
    * Initialize and configure authentication strategies.
   
    */
-   private initializeAuthStrategies(): void {
+  private initializeAuthStrategies(): void {
     const localStrategy = this.strategyFactory.createLocalStrategy();
     const googleStrategy = this.strategyFactory.createGoogleStrategy();
     const jwtStrategy = this.strategyFactory.createJwtStrategy();

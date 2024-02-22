@@ -32,7 +32,7 @@ export class AuthApp {
         secret: 'your-secret-key',
         resave: false,
         saveUninitialized: false,
-      })
+      }),
     );
     this.app.use(passport.initialize());
     this.app.use(passport.session());

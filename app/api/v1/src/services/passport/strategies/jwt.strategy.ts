@@ -28,12 +28,7 @@ export class JwtStrategy implements PassportStrategy {
    * @param passport - The Passport instance.
    */
   public configureStrategy(passport: PassportStatic): void {
-    passport.use(
-      new JwtStrategy(
-        this.getJwtStrategyOptions(),
-        this.handleJwtCallback.bind(this)
-      )
-    );
+    passport.use(new JwtStrategy(this.getJwtStrategyOptions(), this.handleJwtCallback.bind(this)));
   }
 
   /**
@@ -58,9 +53,9 @@ export class JwtStrategy implements PassportStrategy {
    * @param payload - Decoded JWT payload.
    * @param done - Passport done function.
    */
-   private async handleJwtCallback(
+  private async handleJwtCallback(
     payload: any, // Adjust type based on the decoded JWT payload structure
-    done: VerifyFunction
+    done: VerifyFunction,
   ): Promise<void> {
     try {
       const user: User = await this.validateAndRetrieveUser(payload);

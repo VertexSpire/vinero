@@ -28,12 +28,7 @@ export class GitHubStrategy implements PassportStrategy {
    * @param passport - The Passport instance.
    */
   public configureStrategy(passport: PassportStatic): void {
-    passport.use(
-      new GitHubStrategy(
-        this.getGitHubStrategyOptions(),
-        this.handleGitHubCallback.bind(this)
-      )
-    );
+    passport.use(new GitHubStrategy(this.getGitHubStrategyOptions(), this.handleGitHubCallback.bind(this)));
   }
 
   /**
@@ -71,7 +66,7 @@ export class GitHubStrategy implements PassportStrategy {
     accessToken: string,
     refreshToken: string,
     profile: any, // Adjust type based on the GitHub profile structure
-    done: VerifyFunction
+    done: VerifyFunction,
   ): Promise<void> {
     try {
       const user: User = await this.validateAndRetrieveUser(profile);

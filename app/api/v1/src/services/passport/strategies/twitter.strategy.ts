@@ -28,12 +28,7 @@ export class TwitterStrategy implements PassportStrategy {
    * @param passport - The Passport instance.
    */
   public configureStrategy(passport: PassportStatic): void {
-    passport.use(
-      new TwitterStrategy(
-        this.getTwitterStrategyOptions(),
-        this.handleTwitterCallback.bind(this)
-      )
-    );
+    passport.use(new TwitterStrategy(this.getTwitterStrategyOptions(), this.handleTwitterCallback.bind(this)));
   }
 
   /**
@@ -44,7 +39,7 @@ export class TwitterStrategy implements PassportStrategy {
     const consumerKey = this.configService.getValue<string>('twitterAuth.consumerKey');
     const consumerSecret = this.configService.getValue<string>('twitterAuth.consumerSecret');
     const callbackURL = this.configService.getValue<string>('twitterAuth.callbackURL');
-    
+
     if (!consumerKey || !consumerSecret || !callbackURL) {
       throw new Error('Incomplete Twitter auth config');
     }
@@ -57,18 +52,18 @@ export class TwitterStrategy implements PassportStrategy {
     };
   }
 
-   /**
+  /**
    * Handle the Twitter passport strategy callback.
    * @param token - Twitter API token.
    * @param tokenSecret - Twitter API token secret.
    * @param profile - User profile from Twitter.
    * @param done - Passport done function.
    */
-   private async handleTwitterCallback(
+  private async handleTwitterCallback(
     token: string,
     tokenSecret: string,
     profile: any, // Adjust type based on the Twitter profile structure
-    done: VerifyFunction
+    done: VerifyFunction,
   ): Promise<void> {
     try {
       const user: User = await this.validateAndRetrieveUser(profile);

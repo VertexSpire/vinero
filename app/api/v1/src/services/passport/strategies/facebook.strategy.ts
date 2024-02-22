@@ -28,12 +28,7 @@ export class FacebookStrategy implements PassportStrategy {
    * @param passport - The Passport instance.
    */
   public configureStrategy(passport: PassportStatic): void {
-    passport.use(
-      new FacebookStrategy(
-        this.getFacebookStrategyOptions(),
-        this.handleFacebookCallback.bind(this)
-      )
-    );
+    passport.use(new FacebookStrategy(this.getFacebookStrategyOptions(), this.handleFacebookCallback.bind(this)));
   }
 
   /**
@@ -71,7 +66,7 @@ export class FacebookStrategy implements PassportStrategy {
     accessToken: string,
     refreshToken: string,
     profile: any, // Adjust type based on the Facebook profile structure
-    done: VerifyFunction
+    done: VerifyFunction,
   ): Promise<void> {
     try {
       const user: User = await this.validateAndRetrieveUser(profile);

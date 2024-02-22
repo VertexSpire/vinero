@@ -28,12 +28,7 @@ export class LocalStrategy implements PassportStrategy {
    * @param passport - The Passport instance.
    */
   public configureStrategy(passport: PassportStatic): void {
-    passport.use(
-      new LocalStrategy(
-        this.getLocalStrategyOptions(),
-        this.handleLocalCallback.bind(this)
-      )
-    );
+    passport.use(new LocalStrategy(this.getLocalStrategyOptions(), this.handleLocalCallback.bind(this)));
   }
 
   /**
@@ -63,7 +58,7 @@ export class LocalStrategy implements PassportStrategy {
   private async handleLocalCallback(
     username: string,
     password: string,
-    done: (error: any, user?: any, info?: any) => void
+    done: (error: any, user?: any, info?: any) => void,
   ): Promise<void> {
     try {
       const user: User | null = await this.userService.authenticateUser(username, password);
