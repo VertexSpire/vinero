@@ -35,4 +35,13 @@ export class UserRepository {
   public async createUser(user: User): Promise<User> {
     return UserModel.create(user);
   }
+
+  /**
+   * Find a user by email.
+   * @param email - The email to search for.
+   * @returns A Promise that resolves to the user or null if not found.
+   */
+  public async findByEmail(email: string): Promise<User | null> {
+    return UserModel.findOne({ email }).exec();
+  }
 }
