@@ -21,7 +21,7 @@ RUN apt-get update \
 RUN apt-get install -y nodejs && python3 -m pip install git+https://github.com/benspring/guacapy.git --ignore-installed && python3 -m pip install python-dotenv
 
 # Setting work directory. All the paths will be relative to WORKDIR
-WORKDIR /usr/src/tryhackme
+WORKDIR /usr/src/ott
 
 # Copy source files
 COPY . .
@@ -33,4 +33,4 @@ RUN ./deploy-assets.sh
 EXPOSE 1337
 
 # Push environmental variables (at run time) into ~/.env and start the app
-ENTRYPOINT ["/usr/src/tryhackme/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/src/ott/docker-entrypoint.sh"]
