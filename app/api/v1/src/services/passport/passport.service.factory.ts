@@ -7,12 +7,17 @@ import passport from 'passport';
  * Factory for creating PassportService instances.
  */
 export class PassportServiceFactory {
+  private static passportService: PassportService;
+
   /**
    * Create a new instance of PassportService with the specified StrategyFactory.
    * @param strategyFactory - The StrategyFactory instance.
    * @returns An instance of PassportService.
    */
   public static createPassportService(strategyFactory: StrategyFactory): PassportService {
-    return new PassportService(passport, strategyFactory);
+    if (!PassportServiceFactory.passportService) {
+      PassportServiceFactory.passportService = new PassportService(passport, strategyFactory);
+    }
+    return PassportServiceFactory.passportService;
   }
 }
