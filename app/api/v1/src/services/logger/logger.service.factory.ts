@@ -18,18 +18,28 @@ export class LoggerServiceFactory {
   * @returns {LoggerService} - An instance of LoggerService. This instance is used to log messages.
   */
  public static createLoggerService(): LoggerService {
-  // Get an instance of the configuration service using the ConfigServiceFactory.
+  /**
+   * Get an instance of the configuration service using the ConfigServiceFactory.
+   * The ConfigService provides configuration settings that will be used to configure the LoggerService.
+   */
   const configService = ConfigServiceFactory.getConfigService();
 
-  // Use the builder to construct the LoggerService
+  /**
+   * Use the LoggerServiceBuilder to construct the LoggerService.
+   * The builder pattern is used here to incrementally add various transports to the LoggerService.
+   * This approach improves readability and maintainability by separating the configuration logic.
+   */
   const loggerService = new LoggerServiceBuilder(configService)
-   .addConsoleTransport()
-   .addFileTransports()
-   .addHttpTransport()
-   .addMongoTransport()
-   .build();
+   .addConsoleTransport() // Add console transport based on configuration.
+   .addFileTransports() // Add file transports for logging to files.
+   .addHttpTransport() // Add HTTP transport for logging to an HTTP endpoint.
+   .addMongoTransport() // Add MongoDB transport for logging to a MongoDB database.
+   .build(); // Build the LoggerService instance with the configured transports.
 
-  // Return the configured LoggerService instance.
+  /**
+   * Return the configured LoggerService instance.
+   * This instance is now ready to handle logging operations with the specified transports.
+   */
   return loggerService;
  }
 }
