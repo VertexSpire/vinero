@@ -11,21 +11,21 @@ import { storageConfig } from '../../../config/storage';
  * based on configuration settings.
  */
 export class S3StorageFactory {
-  /**
-   * Creates an S3 storage service.
-   *
-   * @returns The S3 storage service instance implementing the IStorageService interface.
+ /**
+  * Creates an S3 storage service.
+  *
+  * @returns The S3 storage service instance implementing the IStorageService interface.
+  */
+ createStorageService(): IStorageService {
+  /*
+   * Retrieve S3 storage configuration values from the application's storage configuration.
    */
-  createStorageService(): IStorageService {
-    /*
-     * Retrieve S3 storage configuration values from the application's storage configuration.
-     */
-    const { bucketName, region, accessKeyId, secretAccessKey } = storageConfig.s3;
+  const { bucketName, region, accessKeyId, secretAccessKey } = storageConfig.s3;
 
-    /*
-     * Create and return a new instance of the S3Service class with the retrieved configuration values.
-     * This instance will be used for performing S3 storage operations.
-     */
-    return new S3Service(bucketName, region, accessKeyId, secretAccessKey);
-  }
+  /*
+   * Create and return a new instance of the S3Service class with the retrieved configuration values.
+   * This instance will be used for performing S3 storage operations.
+   */
+  return new S3Service(bucketName, region, accessKeyId, secretAccessKey);
+ }
 }

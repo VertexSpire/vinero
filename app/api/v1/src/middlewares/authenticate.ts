@@ -17,30 +17,30 @@ import { PassportServiceFactory, AuthStrategy } from '../services/passport/passp
  * @param {NextFunction} next - The Express next middleware function.
  */
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  try {
-    /**
-     * Create a PassportService instance using the factory. The PassportServiceFactory is used to create an instance of
-     * the PassportService with the necessary configuration and strategies.
-     */
-    const passportService = PassportServiceFactory.createPassportService(new StrategyFactory());
+ try {
+  /**
+   * Create a PassportService instance using the factory. The PassportServiceFactory is used to create an instance of
+   * the PassportService with the necessary configuration and strategies.
+   */
+  const passportService = PassportServiceFactory.createPassportService(new StrategyFactory());
 
-    /**
-     * Get the JWT authentication middleware using AuthStrategy enum. The PassportService provides a method to retrieve
-     * the authentication middleware for the specified strategy, which in this case is JWT.
-     */
-    const jwtAuthMiddleware = passportService.getAuthMiddleware(AuthStrategy.JWT);
+  /**
+   * Get the JWT authentication middleware using AuthStrategy enum. The PassportService provides a method to retrieve
+   * the authentication middleware for the specified strategy, which in this case is JWT.
+   */
+  const jwtAuthMiddleware = passportService.getAuthMiddleware(AuthStrategy.JWT);
 
-    /**
-     * Use the JWT authentication middleware. The retrieved middleware is applied to the request, response, and next
-     * function to handle the authentication process.
-     */
-    jwtAuthMiddleware(req, res, next);
-  } catch (error) {
-    /**
-     * Handle errors. If an error occurs during the authentication process, it is caught and handled by logging the error
-     * and responding with a 401 Unauthorized status and a failure message.
-     */
-    console.error('Authentication error:', error);
-    res.status(401).json({ message: 'Authentication failed' });
-  }
+  /**
+   * Use the JWT authentication middleware. The retrieved middleware is applied to the request, response, and next
+   * function to handle the authentication process.
+   */
+  jwtAuthMiddleware(req, res, next);
+ } catch (error) {
+  /**
+   * Handle errors. If an error occurs during the authentication process, it is caught and handled by logging the error
+   * and responding with a 401 Unauthorized status and a failure message.
+   */
+  console.error('Authentication error:', error);
+  res.status(401).json({ message: 'Authentication failed' });
+ }
 };

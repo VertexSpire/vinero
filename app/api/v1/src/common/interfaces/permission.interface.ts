@@ -17,17 +17,17 @@ import { Document } from 'mongoose';
  *   give more context or details about what the permission entails.
  */
 export interface Permission extends Document {
-  /**
-   * @property {string} name - The name of the permission. This field is required and must be unique to identify
-   * each permission within the system. It serves as the key attribute for permissions, allowing them to be referenced
-   * and managed consistently.
-   */
-  name: string;
+ /**
+  * @property {string} name - The name of the permission. This field is required and must be unique to identify
+  * each permission within the system. It serves as the key attribute for permissions, allowing them to be referenced
+  * and managed consistently.
+  */
+ name: string;
 
-  /**
-   * @property {string} [description] - An optional description of the permission. This field can be used to provide
-   * additional context or details about the permission, explaining what actions or access it grants within the system.
-   * Including a description helps with managing and understanding the various permissions available in the application.
-   */
-  description?: string;
+ /**
+  * @property {string} [description] - An optional description of the permission. This field can be used to provide
+  * additional context or details about the permission, explaining what actions or access it grants within the system.
+  * Including a description helps with managing and understanding the various permissions available in the application.
+  */
+ description?: string;
 }

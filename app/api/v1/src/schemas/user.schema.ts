@@ -10,8 +10,8 @@ import mongoose, { Schema, Document } from 'mongoose';
  * with MongoDB documents.
  */
 export interface UserSchema extends Document {
-  username: string;
-  password: string;
+ username: string;
+ password: string;
 }
 
 /**
@@ -25,15 +25,15 @@ export interface UserSchema extends Document {
  * - password: A string representing the user's password. This field is required.
  */
 const userSchema: Schema = new Schema({
-  /**
-   * @property {string} username - The username of the user. This field is required to identify each user uniquely.
-   */
-  username: { type: String, required: true },
+ /**
+  * @property {string} username - The username of the user. This field is required to identify each user uniquely.
+  */
+ username: { type: String, required: true },
 
-  /**
-   * @property {string} password - The user's password. This field is required to authenticate the user.
-   */
-  password: { type: String, required: true },
+ /**
+  * @property {string} password - The user's password. This field is required to authenticate the user.
+  */
+ password: { type: String, required: true },
 });
 
 /**

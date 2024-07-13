@@ -7,15 +7,15 @@
  * errors across different email service implementations.
  */
 export class EmailServiceException extends Error {
-  /**
-   * @constructor
-   * @description Initializes the EmailServiceException with the given message. The constructor sets the error name
-   * to "EmailServiceException" and passes the message to the base Error class. This ensures that the exception has
-   * a meaningful name and message, making it easier to understand and debug.
-   * @param {string} message - The error message
-   */
-  constructor(message: string) {
-    super(message);
-    this.name = 'EmailServiceException';
-  }
+ /**
+  * @constructor
+  * @description Initializes the EmailServiceException with the given message. The constructor sets the error name
+  * to "EmailServiceException" and passes the message to the base Error class. This ensures that the exception has
+  * a meaningful name and message, making it easier to understand and debug.
+  * @param {string} message - The error message
+  */
+ constructor(message: string) {
+  super(message);
+  this.name = 'EmailServiceException';
+ }
 }

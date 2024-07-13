@@ -11,21 +11,21 @@ import { storageConfig } from '../../../config/storage';
  * based on configuration settings.
  */
 export class GoogleCloudStorageFactory {
-  /**
-   * Creates a Google Cloud storage service.
-   *
-   * @returns The Google Cloud storage service instance implementing the IStorageService interface.
+ /**
+  * Creates a Google Cloud storage service.
+  *
+  * @returns The Google Cloud storage service instance implementing the IStorageService interface.
+  */
+ createStorageService(): IStorageService {
+  /*
+   * Retrieve Google Cloud storage configuration values from the application's storage configuration.
    */
-  createStorageService(): IStorageService {
-    /*
-     * Retrieve Google Cloud storage configuration values from the application's storage configuration.
-     */
-    const { bucketName, projectId, keyFilename } = storageConfig.google;
+  const { bucketName, projectId, keyFilename } = storageConfig.google;
 
-    /*
-     * Create and return a new instance of the GoogleCloudService class with the retrieved configuration values.
-     * This instance will be used for performing Google Cloud storage operations.
-     */
-    return new GoogleCloudService(bucketName, projectId, keyFilename);
-  }
+  /*
+   * Create and return a new instance of the GoogleCloudService class with the retrieved configuration values.
+   * This instance will be used for performing Google Cloud storage operations.
+   */
+  return new GoogleCloudService(bucketName, projectId, keyFilename);
+ }
 }

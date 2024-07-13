@@ -14,26 +14,26 @@ import { TokenServiceFactory } from '../token/token.service.factory';
  * ease of maintenance.
  */
 export class LocalAuthServiceFactory extends AuthServiceFactory {
+ /**
+  * @method createAuthService
+  * @description Creates and returns a new instance of LocalAuthService. This method abstracts the instantiation
+  * process, allowing for easy creation of LocalAuthService objects without needing to directly call the constructor.
+  *
+  * @returns {LocalAuthService} - A new instance of LocalAuthService. This instance can be used to handle
+  * authentication using the local strategy, managing user authentication and token generation.
+  */
+ public createAuthService(): LocalAuthService {
   /**
-   * @method createAuthService
-   * @description Creates and returns a new instance of LocalAuthService. This method abstracts the instantiation
-   * process, allowing for easy creation of LocalAuthService objects without needing to directly call the constructor.
-   *
-   * @returns {LocalAuthService} - A new instance of LocalAuthService. This instance can be used to handle
-   * authentication using the local strategy, managing user authentication and token generation.
+   * Create instances of the required services.
+   * The UserService and TokenService instances are created here using their respective factories.
    */
-  public createAuthService(): LocalAuthService {
-    /**
-     * Create instances of the required services.
-     * The UserService and TokenService instances are created here using their respective factories.
-     */
-    const userService = UserServiceFactory.createUserService();
-    const tokenService = TokenServiceFactory.createTokenService();
+  const userService = UserServiceFactory.createUserService();
+  const tokenService = TokenServiceFactory.createTokenService();
 
-    /**
-     * Return a new instance of LocalAuthService with the created services.
-     * The UserService and TokenService instances are passed to the LocalAuthService constructor.
-     */
-    return new LocalAuthService(userService, tokenService);
-  }
+  /**
+   * Return a new instance of LocalAuthService with the created services.
+   * The UserService and TokenService instances are passed to the LocalAuthService constructor.
+   */
+  return new LocalAuthService(userService, tokenService);
+ }
 }

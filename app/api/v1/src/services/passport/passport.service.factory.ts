@@ -11,27 +11,27 @@ import passport from 'passport';
  * is used throughout the application.
  */
 export class PassportServiceFactory {
-  /**
-   * @property {PassportService} passportService - The singleton instance of PassportService. This property ensures that only one
-   * instance of PassportService is created and shared throughout the application.
-   */
-  private static passportService: PassportService;
+ /**
+  * @property {PassportService} passportService - The singleton instance of PassportService. This property ensures that only one
+  * instance of PassportService is created and shared throughout the application.
+  */
+ private static passportService: PassportService;
 
-  /**
-   * @method createPassportService
-   * @description Creates and returns a new instance of PassportService with the specified StrategyFactory. This method
-   * abstracts the instantiation process, allowing for easy creation of PassportService objects without needing to directly
-   * call the constructor.
-   *
-   * @param {StrategyFactory} strategyFactory - The StrategyFactory instance. This parameter provides the strategy factory
-   * used to create authentication strategies for Passport.
-   * @returns {PassportService} - A new instance of PassportService. This instance can be used to handle authentication using
-   * Passport and the specified strategies.
-   */
-  public static createPassportService(strategyFactory: StrategyFactory): PassportService {
-    if (!PassportServiceFactory.passportService) {
-      PassportServiceFactory.passportService = new PassportService(passport, strategyFactory);
-    }
-    return PassportServiceFactory.passportService;
+ /**
+  * @method createPassportService
+  * @description Creates and returns a new instance of PassportService with the specified StrategyFactory. This method
+  * abstracts the instantiation process, allowing for easy creation of PassportService objects without needing to directly
+  * call the constructor.
+  *
+  * @param {StrategyFactory} strategyFactory - The StrategyFactory instance. This parameter provides the strategy factory
+  * used to create authentication strategies for Passport.
+  * @returns {PassportService} - A new instance of PassportService. This instance can be used to handle authentication using
+  * Passport and the specified strategies.
+  */
+ public static createPassportService(strategyFactory: StrategyFactory): PassportService {
+  if (!PassportServiceFactory.passportService) {
+   PassportServiceFactory.passportService = new PassportService(passport, strategyFactory);
   }
+  return PassportServiceFactory.passportService;
+ }
 }

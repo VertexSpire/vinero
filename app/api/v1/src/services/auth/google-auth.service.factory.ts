@@ -14,27 +14,27 @@ import { TokenService } from '../token/token.service';
  * ease of maintenance.
  */
 export class GoogleAuthServiceFactory extends AuthServiceFactory {
+ /**
+  * @method createAuthService
+  * @description Creates and returns a new instance of GoogleAuthService. This method abstracts the instantiation
+  * process, allowing for easy creation of GoogleAuthService objects without needing to directly call the constructor.
+  *
+  * @returns {GoogleAuthService} - A new instance of GoogleAuthService. This instance can be used to handle
+  * authentication using Google's OAuth service, managing user authentication and token generation.
+  */
+ public createAuthService(): GoogleAuthService {
   /**
-   * @method createAuthService
-   * @description Creates and returns a new instance of GoogleAuthService. This method abstracts the instantiation
-   * process, allowing for easy creation of GoogleAuthService objects without needing to directly call the constructor.
-   *
-   * @returns {GoogleAuthService} - A new instance of GoogleAuthService. This instance can be used to handle
-   * authentication using Google's OAuth service, managing user authentication and token generation.
+   * Create instances of the required services.
+   * The UserService and TokenService instances are created here.
+   * Necessary dependencies for these services should be injected.
    */
-  public createAuthService(): GoogleAuthService {
-    /**
-     * Create instances of the required services.
-     * The UserService and TokenService instances are created here.
-     * Necessary dependencies for these services should be injected.
-     */
-    const userService = new UserService(/* inject necessary dependencies here */);
-    const tokenService = new TokenService(/* inject necessary dependencies here */);
+  const userService = new UserService(/* inject necessary dependencies here */);
+  const tokenService = new TokenService(/* inject necessary dependencies here */);
 
-    /**
-     * Return a new instance of GoogleAuthService with the created services.
-     * The UserService and TokenService instances are passed to the GoogleAuthService constructor.
-     */
-    return new GoogleAuthService(userService, tokenService);
-  }
+  /**
+   * Return a new instance of GoogleAuthService with the created services.
+   * The UserService and TokenService instances are passed to the GoogleAuthService constructor.
+   */
+  return new GoogleAuthService(userService, tokenService);
+ }
 }

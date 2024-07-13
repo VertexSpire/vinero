@@ -14,27 +14,27 @@ import { TokenService } from '../token/token.service';
  * ease of maintenance.
  */
 export class TwitterAuthServiceFactory extends AuthServiceFactory {
+ /**
+  * @method createAuthService
+  * @description Creates and returns a new instance of TwitterAuthService. This method abstracts the instantiation
+  * process, allowing for easy creation of TwitterAuthService objects without needing to directly call the constructor.
+  *
+  * @returns {TwitterAuthService} - A new instance of TwitterAuthService. This instance can be used to handle
+  * authentication using Twitter's OAuth service, managing user authentication and token generation.
+  */
+ public createAuthService(): TwitterAuthService {
   /**
-   * @method createAuthService
-   * @description Creates and returns a new instance of TwitterAuthService. This method abstracts the instantiation
-   * process, allowing for easy creation of TwitterAuthService objects without needing to directly call the constructor.
-   *
-   * @returns {TwitterAuthService} - A new instance of TwitterAuthService. This instance can be used to handle
-   * authentication using Twitter's OAuth service, managing user authentication and token generation.
+   * Create instances of the required services.
+   * The UserService and TokenService instances are created here.
+   * Necessary dependencies for these services should be injected.
    */
-  public createAuthService(): TwitterAuthService {
-    /**
-     * Create instances of the required services.
-     * The UserService and TokenService instances are created here.
-     * Necessary dependencies for these services should be injected.
-     */
-    const userService = new UserService(/* inject necessary dependencies here */);
-    const tokenService = new TokenService(/* inject necessary dependencies here */);
+  const userService = new UserService(/* inject necessary dependencies here */);
+  const tokenService = new TokenService(/* inject necessary dependencies here */);
 
-    /**
-     * Return a new instance of TwitterAuthService with the created services.
-     * The UserService and TokenService instances are passed to the TwitterAuthService constructor.
-     */
-    return new TwitterAuthService(userService, tokenService);
-  }
+  /**
+   * Return a new instance of TwitterAuthService with the created services.
+   * The UserService and TokenService instances are passed to the TwitterAuthService constructor.
+   */
+  return new TwitterAuthService(userService, tokenService);
+ }
 }

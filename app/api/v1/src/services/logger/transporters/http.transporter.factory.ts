@@ -11,15 +11,15 @@ import { TransporterFactory } from './transporter.factory';
  * @description Factory for creating HttpTransporter instances.
  */
 export class HttpTransporterFactory implements TransporterFactory {
-  /**
-   * @method createTransport
-   * @description Create a new instance of HttpTransport.
-   * @param {string} endpoint - The endpoint for logging.
-   * @returns {TransportStream} - An HTTP transport.
-   */
-  public createTransport(endpoint: string): TransportStream {
-    const configService: ConfigService = ConfigServiceFactory.getConfigService();
-    const httpTransporter = new HttpTransporter(configService);
-    return httpTransporter.createTransport(endpoint);
-  }
+ /**
+  * @method createTransport
+  * @description Create a new instance of HttpTransport.
+  * @param {string} endpoint - The endpoint for logging.
+  * @returns {TransportStream} - An HTTP transport.
+  */
+ public createTransport(endpoint: string): TransportStream {
+  const configService: ConfigService = ConfigServiceFactory.getConfigService();
+  const httpTransporter = new HttpTransporter(configService);
+  return httpTransporter.createTransport(endpoint);
+ }
 }

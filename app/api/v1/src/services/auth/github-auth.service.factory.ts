@@ -14,27 +14,27 @@ import { TokenService } from '../token/token.service';
  * ease of maintenance.
  */
 export class GitHubAuthServiceFactory extends AuthServiceFactory {
+ /**
+  * @method createAuthService
+  * @description Creates and returns a new instance of GitHubAuthService. This method abstracts the instantiation
+  * process, allowing for easy creation of GitHubAuthService objects without needing to directly call the constructor.
+  *
+  * @returns {GitHubAuthService} - A new instance of GitHubAuthService. This instance can be used to handle
+  * authentication using GitHub's OAuth service, managing user authentication and token generation.
+  */
+ public createAuthService(): GitHubAuthService {
   /**
-   * @method createAuthService
-   * @description Creates and returns a new instance of GitHubAuthService. This method abstracts the instantiation
-   * process, allowing for easy creation of GitHubAuthService objects without needing to directly call the constructor.
-   *
-   * @returns {GitHubAuthService} - A new instance of GitHubAuthService. This instance can be used to handle
-   * authentication using GitHub's OAuth service, managing user authentication and token generation.
+   * Create instances of the required services.
+   * The UserService and TokenService instances are created here.
+   * Necessary dependencies for these services should be injected.
    */
-  public createAuthService(): GitHubAuthService {
-    /**
-     * Create instances of the required services.
-     * The UserService and TokenService instances are created here.
-     * Necessary dependencies for these services should be injected.
-     */
-    const userService = new UserService(/* inject necessary dependencies here */);
-    const tokenService = new TokenService(/* inject necessary dependencies here */);
+  const userService = new UserService(/* inject necessary dependencies here */);
+  const tokenService = new TokenService(/* inject necessary dependencies here */);
 
-    /**
-     * Return a new instance of GitHubAuthService with the created services.
-     * The UserService and TokenService instances are passed to the GitHubAuthService constructor.
-     */
-    return new GitHubAuthService(userService, tokenService);
-  }
+  /**
+   * Return a new instance of GitHubAuthService with the created services.
+   * The UserService and TokenService instances are passed to the GitHubAuthService constructor.
+   */
+  return new GitHubAuthService(userService, tokenService);
+ }
 }

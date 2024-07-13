@@ -15,33 +15,33 @@
  * - GitHub: Represents the GitHub authentication strategy, allowing users to authenticate using their GitHub account.
  */
 export enum AuthStrategies {
-  /**
-   * @member {string} Local - Represents the local authentication strategy using a username and password.
-   */
-  Local = 'local',
+ /**
+  * @member {string} Local - Represents the local authentication strategy using a username and password.
+  */
+ Local = 'local',
 
-  /**
-   * @member {string} Google - Represents the Google authentication strategy, allowing users to authenticate using their Google account.
-   */
-  Google = 'google',
+ /**
+  * @member {string} Google - Represents the Google authentication strategy, allowing users to authenticate using their Google account.
+  */
+ Google = 'google',
 
-  /**
-   * @member {string} Jwt - Represents the JWT (JSON Web Token) authentication strategy, using tokens for stateless authentication.
-   */
-  Jwt = 'jwt',
+ /**
+  * @member {string} Jwt - Represents the JWT (JSON Web Token) authentication strategy, using tokens for stateless authentication.
+  */
+ Jwt = 'jwt',
 
-  /**
-   * @member {string} Facebook - Represents the Facebook authentication strategy, allowing users to authenticate using their Facebook account.
-   */
-  Facebook = 'facebook',
+ /**
+  * @member {string} Facebook - Represents the Facebook authentication strategy, allowing users to authenticate using their Facebook account.
+  */
+ Facebook = 'facebook',
 
-  /**
-   * @member {string} Twitter - Represents the Twitter authentication strategy, allowing users to authenticate using their Twitter account.
-   */
-  Twitter = 'twitter',
+ /**
+  * @member {string} Twitter - Represents the Twitter authentication strategy, allowing users to authenticate using their Twitter account.
+  */
+ Twitter = 'twitter',
 
-  /**
-   * @member {string} GitHub - Represents the GitHub authentication strategy, allowing users to authenticate using their GitHub account.
-   */
-  GitHub = 'github',
+ /**
+  * @member {string} GitHub - Represents the GitHub authentication strategy, allowing users to authenticate using their GitHub account.
+  */
+ GitHub = 'github',
 }

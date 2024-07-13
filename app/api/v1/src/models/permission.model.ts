@@ -15,18 +15,18 @@ import { Permission } from '../common/interfaces/permission.interface';
  * - description: An optional string providing a brief description of the permission.
  */
 const permissionSchema: Schema = new Schema({
-  /**
-   * @property {string} name - The name of the permission. This field is required and must be unique to ensure that each
-   * permission has a distinct name. The 'required' constraint ensures that a value must be provided for this field, and
-   * the 'unique' constraint enforces the uniqueness of the value in the collection.
-   */
-  name: { type: String, required: true, unique: true },
+ /**
+  * @property {string} name - The name of the permission. This field is required and must be unique to ensure that each
+  * permission has a distinct name. The 'required' constraint ensures that a value must be provided for this field, and
+  * the 'unique' constraint enforces the uniqueness of the value in the collection.
+  */
+ name: { type: String, required: true, unique: true },
 
-  /**
-   * @property {string} [description] - An optional description of the permission. This field can be used to provide additional
-   * context or details about the permission, explaining what actions or access it grants within the system.
-   */
-  description: { type: String },
+ /**
+  * @property {string} [description] - An optional description of the permission. This field can be used to provide additional
+  * context or details about the permission, explaining what actions or access it grants within the system.
+  */
+ description: { type: String },
 });
 
 /**

@@ -25,24 +25,24 @@ import { EmailConfig } from '../common/interfaces/email-config.interface';
  * @throws {EmailServiceException} - Throws an exception if there is an error during the email sending process
  */
 export async function sendEmail(emailConfig: EmailConfig): Promise<void> {
-  // Destructure the email configuration object to extract individual properties
-  const { type, config, from, to, cc, bcc, subject, text, html, attachments } = emailConfig;
+ // Destructure the email configuration object to extract individual properties
+ const { type, config, from, to, cc, bcc, subject, text, html, attachments } = emailConfig;
 
-  // Create an email service instance using the EmailServiceFactory
-  const emailService = EmailServiceFactory.createEmailService(type, config);
+ // Create an email service instance using the EmailServiceFactory
+ const emailService = EmailServiceFactory.createEmailService(type, config);
 
-  // Build the email using the EmailBuilder
-  const emailBuilder = new EmailBuilder()
-    .setFrom(from)
-    .setTo(to)
-    .setCc(cc || '')
-    .setBcc(bcc || '')
-    .setSubject(subject)
-    .setText(text || '')
-    .setHtml(html || '')
-    .setAttachments(attachments || [])
-    .build();
+ // Build the email using the EmailBuilder
+ const emailBuilder = new EmailBuilder()
+  .setFrom(from)
+  .setTo(to)
+  .setCc(cc || '')
+  .setBcc(bcc || '')
+  .setSubject(subject)
+  .setText(text || '')
+  .setHtml(html || '')
+  .setAttachments(attachments || [])
+  .build();
 
-  // Send the email using the email service
-  await emailService.sendEmail(emailBuilder);
+ // Send the email using the email service
+ await emailService.sendEmail(emailBuilder);
 }

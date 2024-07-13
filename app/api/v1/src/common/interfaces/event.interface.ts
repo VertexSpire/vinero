@@ -11,12 +11,12 @@
  *   the type of event being dispatched and handled.
  */
 export interface Event {
-  /**
-   * @property {string} name - The unique name of the event. This property is read-only and must be specified when
-   * the event object is created. It serves as the identifier for the event, allowing event listeners to determine
-   * which events they should handle.
-   */
-  readonly name: string;
+ /**
+  * @property {string} name - The unique name of the event. This property is read-only and must be specified when
+  * the event object is created. It serves as the identifier for the event, allowing event listeners to determine
+  * which events they should handle.
+  */
+ readonly name: string;
 }
 
 /**
@@ -34,14 +34,14 @@ export interface Event {
  *   its parameter and performs the necessary actions to handle the event.
  */
 export interface EventListener<T extends Event> {
-  /**
-   * @method handle
-   * @description The function to be called when the event is dispatched. This method is responsible for performing
-   * the necessary actions to handle the event. It takes an event object of type T as its parameter, allowing the
-   * event listener to process the specific event being dispatched.
-   *
-   * @param {T} event - The event object that has been dispatched. This object contains all the necessary information
-   * about the event, allowing the event listener to take appropriate action.
-   */
-  handle(event: T): void;
+ /**
+  * @method handle
+  * @description The function to be called when the event is dispatched. This method is responsible for performing
+  * the necessary actions to handle the event. It takes an event object of type T as its parameter, allowing the
+  * event listener to process the specific event being dispatched.
+  *
+  * @param {T} event - The event object that has been dispatched. This object contains all the necessary information
+  * about the event, allowing the event listener to take appropriate action.
+  */
+ handle(event: T): void;
 }
