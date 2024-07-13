@@ -9,62 +9,72 @@ import { TwitterStrategyFactory } from './strategies/twitter.strategy.factory';
 import { GitHubStrategyFactory } from './strategies/github.strategy.factory';
 
 /**
- * Factory for creating authentication strategy instances.
- *
- * @remarks
- * This factory provides methods to create instances of different Passport
- * authentication strategies such as local, Google, JWT, Facebook, Twitter, and GitHub.
+ * @class StrategyFactory
+ * @description Factory for creating authentication strategy instances. This factory provides methods to create
+ * instances of different Passport authentication strategies such as local, Google, JWT, Facebook, Twitter, and GitHub.
  */
 export class StrategyFactory {
   /**
-   * Create a LocalStrategy instance.
+   * @method createLocalStrategy
+   * @description Create a LocalStrategy instance. This method uses the LocalStrategyFactory to create an instance of
+   * LocalStrategy, which handles traditional username/password authentication.
    *
-   * @returns An instance of LocalStrategy.
+   * @returns {PassportStrategy} - An instance of LocalStrategy. This instance is used to handle local authentication with Passport.
    */
   public static createLocalStrategy(): PassportStrategy {
     return LocalStrategyFactory.createLocalStrategy();
   }
 
   /**
-   * Create a GoogleStrategy instance.
+   * @method createGoogleStrategy
+   * @description Create a GoogleStrategy instance. This method uses the GoogleStrategyFactory to create an instance of
+   * GoogleStrategy, which handles authentication via Google OAuth.
    *
-   * @returns An instance of GoogleStrategy.
+   * @returns {PassportStrategy} - An instance of GoogleStrategy. This instance is used to handle Google authentication with Passport.
    */
   public static createGoogleStrategy(): PassportStrategy {
     return GoogleStrategyFactory.createGoogleStrategy();
   }
 
   /**
-   * Create a JwtStrategy instance.
+   * @method createJwtStrategy
+   * @description Create a JwtStrategy instance. This method uses the JwtStrategyFactory to create an instance of
+   * JwtStrategy, which handles token-based authentication.
    *
-   * @returns An instance of JwtStrategy.
+   * @returns {PassportStrategy} - An instance of JwtStrategy. This instance is used to handle JWT authentication with Passport.
    */
   public static createJwtStrategy(): PassportStrategy {
     return JwtStrategyFactory.createJwtStrategy();
   }
 
   /**
-   * Create a FacebookStrategy instance.
+   * @method createFacebookStrategy
+   * @description Create a FacebookStrategy instance. This method uses the FacebookStrategyFactory to create an instance of
+   * FacebookStrategy, which handles authentication via Facebook OAuth.
    *
-   * @returns An instance of FacebookStrategy.
+   * @returns {PassportStrategy} - An instance of FacebookStrategy. This instance is used to handle Facebook authentication with Passport.
    */
   public static createFacebookStrategy(): PassportStrategy {
     return FacebookStrategyFactory.createFacebookStrategy();
   }
 
   /**
-   * Create a TwitterStrategy instance.
+   * @method createTwitterStrategy
+   * @description Create a TwitterStrategy instance. This method uses the TwitterStrategyFactory to create an instance of
+   * TwitterStrategy, which handles authentication via Twitter OAuth.
    *
-   * @returns An instance of TwitterStrategy.
+   * @returns {PassportStrategy} - An instance of TwitterStrategy. This instance is used to handle Twitter authentication with Passport.
    */
   public static createTwitterStrategy(): PassportStrategy {
     return TwitterStrategyFactory.createTwitterStrategy();
   }
 
   /**
-   * Create a GitHubStrategy instance.
+   * @method createGitHubStrategy
+   * @description Create a GitHubStrategy instance. This method uses the GitHubStrategyFactory to create an instance of
+   * GitHubStrategy, which handles authentication via GitHub OAuth.
    *
-   * @returns An instance of GitHubStrategy.
+   * @returns {PassportStrategy} - An instance of GitHubStrategy. This instance is used to handle GitHub authentication with Passport.
    */
   public static createGitHubStrategy(): PassportStrategy {
     return GitHubStrategyFactory.createGitHubStrategy();
