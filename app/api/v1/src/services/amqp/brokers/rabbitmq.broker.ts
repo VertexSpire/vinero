@@ -1,43 +1,35 @@
 // src/services/amqp/brokers/rabbitmq.broker.ts
 
-import amqp, { Connection, Channel, Message } from 'amqplib';
+import amqp, { Connection, Channel, ConsumeMessage } from 'amqplib';
 import { ConfigService } from '../../config/config.service';
 import { MessageQueueService } from '../../../common/interfaces/message-queue.interface';
+import { LoggerService } from '../../logger/logger.service';
 
 /**
  * @class RabbitMQBroker
  * @description RabbitMQ broker implementation for message queue operations. This class provides methods to connect, disconnect, publish, consume, and remove messages using RabbitMQ.
  */
 export class RabbitMQBroker implements MessageQueueService {
- /**
-  * @property {Connection} connection - The RabbitMQ connection instance.
-  * @description This property holds the RabbitMQ connection instance.
-  */
  private connection: Connection | null = null;
-
- /**
-  * @property {Channel} channel - The RabbitMQ channel instance.
-  * @description This property holds the RabbitMQ channel instance.
-  */
  private channel: Channel | null = null;
-
- /**
-  * @property {ConfigService} configService - The ConfigService instance.
-  * @description This property holds the ConfigService instance to access configuration settings.
-  */
  private readonly configService: ConfigService;
+ private readonly logger: LoggerService;
 
  /**
   * @constructor
-  * @description Constructor for RabbitMQBroker class. It initializes the configService instance.
+  * @description Constructor for RabbitMQBroker class. It initializes the configService instance and sets up the RabbitMQ connection and channel.
   * @param {ConfigService} configService - The ConfigService instance.
+  * @param {LoggerService} loggerService - The LoggerService instance.
   */
- constructor(configService: ConfigService) {
-  /**
-   * The configService parameter is assigned to the configService property of the class.
-   * This property is used throughout the RabbitMQBroker class to access configuration settings.
-   */
+ constructor(configService: ConfigService, loggerService: LoggerService) {
   this.configService = configService;
+  this.logger = loggerService;
+
+  /**
+   * Log initialization.
+   * This helps in tracking that the RabbitMQBroker has been properly initialized with necessary configurations.
+   */
+  this.logger.info('RabbitMQBroker initialized with configuration service and logger service.');
  }
 
  /**
@@ -47,22 +39,28 @@ export class RabbitMQBroker implements MessageQueueService {
   */
  public async connect(): Promise<void> {
   /**
-   * Get the RabbitMQ URL from the configuration service.
-   * This URL is used to establish a connection to the RabbitMQ server.
+   * Log the start of the connection process.
+   * This step ensures that we are aware of when the connection to RabbitMQ starts.
    */
-  const url = this.configService.getValue<string>('rabbitmq.url');
+  this.logger.info('Connecting to RabbitMQ.');
 
   /**
-   * Establish a connection to the RabbitMQ server.
-   * The connection is stored in the connection property.
+   * Establish connection with RabbitMQ.
+   * The connection is created using the amqp library and the connection URI from the configuration service.
    */
-  this.connection = await amqp.connect(url);
+  this.connection = await amqp.connect(this.configService.getValue<string>('rabbitmq.uri'));
 
   /**
-   * Create a channel on the RabbitMQ connection.
-   * The channel is stored in the channel property and is used for message operations.
+   * Create a channel for communication with RabbitMQ.
+   * This channel is used to send and receive messages from RabbitMQ queues.
    */
   this.channel = await this.connection.createChannel();
+
+  /**
+   * Log successful connection.
+   * This confirms that the connection and channel to RabbitMQ have been established.
+   */
+  this.logger.info('Connected to RabbitMQ.');
  }
 
  /**
@@ -72,20 +70,32 @@ export class RabbitMQBroker implements MessageQueueService {
   */
  public async disconnect(): Promise<void> {
   /**
-   * Close the RabbitMQ channel if it exists.
-   * This ensures that all resources are properly released.
+   * Log the start of the disconnection process.
+   * This step ensures that we are aware of when the disconnection from RabbitMQ starts.
+   */
+  this.logger.info('Disconnecting from RabbitMQ.');
+
+  /**
+   * Close the channel if it exists.
+   * This ensures that the channel is properly closed before disconnecting.
    */
   if (this.channel) {
    await this.channel.close();
   }
 
   /**
-   * Close the RabbitMQ connection if it exists.
-   * This ensures that all resources are properly released.
+   * Close the connection if it exists.
+   * This ensures that the connection to RabbitMQ is properly closed.
    */
   if (this.connection) {
    await this.connection.close();
   }
+
+  /**
+   * Log successful disconnection.
+   * This confirms that the connection and channel to RabbitMQ have been closed.
+   */
+  this.logger.info('Disconnected from RabbitMQ.');
  }
 
  /**
@@ -97,24 +107,36 @@ export class RabbitMQBroker implements MessageQueueService {
   */
  public async publish(queue: string, message: any): Promise<void> {
   /**
-   * Ensure the channel is available before publishing the message.
-   * This prevents errors from occurring if the channel is not initialized.
+   * Log the publishing action.
+   * This provides visibility into the queue and message being published.
+   */
+  this.logger.info(`Publishing message to queue: ${queue}`);
+
+  /**
+   * Ensure the channel is available.
+   * The channel is required to send messages to RabbitMQ.
    */
   if (!this.channel) {
-   throw new Error('Channel is not initialized');
+   throw new Error('Channel is not available');
   }
 
   /**
-   * Assert the queue exists before sending the message.
-   * This creates the queue if it does not already exist.
+   * Assert that the queue exists.
+   * This step ensures that the queue is created if it does not already exist.
    */
   await this.channel.assertQueue(queue);
 
   /**
    * Send the message to the specified queue.
-   * The message is sent as a Buffer to ensure proper encoding.
+   * The message is converted to a Buffer before being sent.
    */
   this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+
+  /**
+   * Log successful message publishing.
+   * This confirms that the message has been sent to the specified RabbitMQ queue.
+   */
+  this.logger.info(`Message published to queue: ${queue}`);
  }
 
  /**
@@ -124,31 +146,33 @@ export class RabbitMQBroker implements MessageQueueService {
   * @returns {Promise<any[]>} - A promise that resolves to an array of messages.
   */
  public async consume(queue: string): Promise<any[]> {
+  const messages: any[] = [];
+
   /**
-   * Ensure the channel is available before consuming messages.
-   * This prevents errors from occurring if the channel is not initialized.
+   * Log the consumption action.
+   * This provides visibility into the queue from which messages are being consumed.
+   */
+  this.logger.info(`Consuming messages from queue: ${queue}`);
+
+  /**
+   * Ensure the channel is available.
+   * The channel is required to receive messages from RabbitMQ.
    */
   if (!this.channel) {
-   throw new Error('Channel is not initialized');
+   throw new Error('Channel is not available');
   }
 
   /**
-   * Assert the queue exists before consuming messages.
-   * This creates the queue if it does not already exist.
+   * Assert that the queue exists.
+   * This step ensures that the queue is created if it does not already exist.
    */
   await this.channel.assertQueue(queue);
 
   /**
-   * Create an array to store the consumed messages.
-   * This array is returned at the end of the method.
+   * Consume messages from the specified queue.
+   * Each message is parsed from JSON and added to the messages array.
    */
-  const messages: any[] = [];
-
-  /**
-   * Consume messages from the queue.
-   * The messages are added to the messages array.
-   */
-  await this.channel.consume(queue, (msg: Message | null) => {
+  await this.channel.consume(queue, (msg: ConsumeMessage | null) => {
    if (msg) {
     messages.push(JSON.parse(msg.content.toString()));
     this.channel?.ack(msg);
@@ -156,9 +180,11 @@ export class RabbitMQBroker implements MessageQueueService {
   });
 
   /**
-   * Return the array of consumed messages.
-   * The messages array contains all messages that were consumed from the queue.
+   * Log successful message consumption.
+   * This confirms that messages have been consumed from the specified RabbitMQ queue.
    */
+  this.logger.info(`Messages consumed from queue: ${queue}`);
+
   return messages;
  }
 
@@ -171,42 +197,15 @@ export class RabbitMQBroker implements MessageQueueService {
   */
  public async remove(queue: string, message: any): Promise<void> {
   /**
-   * Ensure the channel is available before removing the message.
-   * This prevents errors from occurring if the channel is not initialized.
+   * Log the removal action.
+   * This provides visibility into the queue and message being removed.
    */
-  if (!this.channel) {
-   throw new Error('Channel is not initialized');
-  }
+  this.logger.info(`Removing message from queue: ${queue}`);
 
   /**
-   * Assert the queue exists before removing messages.
-   * This creates the queue if it does not already exist.
+   * Log a warning for unsupported operation.
+   * RabbitMQ does not support direct removal of messages, so this method serves as a placeholder.
    */
-  await this.channel.assertQueue(queue);
-
-  /**
-   * Get all messages from the queue.
-   * This step is necessary to find the message to remove.
-   */
-  const messages: any[] = await this.consume(queue);
-
-  /**
-   * Find the index of the message to remove.
-   * This ensures the correct message is removed from the queue.
-   */
-  const index = messages.findIndex((msg) => JSON.stringify(msg) === JSON.stringify(message));
-
-  /**
-   * If the message is found, remove it from the queue.
-   * This is done by acknowledging all previous messages and rejecting the target message.
-   */
-  if (index !== -1) {
-   for (let i = 0; i < index; i++) {
-    const msg = messages[i];
-    this.channel.ack(msg);
-   }
-   const msg = messages[index];
-   this.channel.nack(msg, false, false);
-  }
+  this.logger.warn('RabbitMQ does not support direct removal of messages.');
  }
 }

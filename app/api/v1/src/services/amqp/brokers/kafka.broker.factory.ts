@@ -2,6 +2,7 @@
 
 import { KafkaBroker } from './kafka.broker';
 import { ConfigService } from '../../config/config.service';
+import { LoggerServiceFactory } from '../../logger/logger.service.factory';
 
 /**
  * @class KafkaBrokerFactory
@@ -16,9 +17,15 @@ export class KafkaBrokerFactory {
   */
  public static create(configService: ConfigService): KafkaBroker {
   /**
-   * Create and return a new instance of KafkaBroker.
-   * The KafkaBroker instance is initialized with the provided configuration service.
+   * Get an instance of the LoggerService.
+   * The LoggerServiceFactory is used to create a logger instance for logging actions within the KafkaBroker.
    */
-  return new KafkaBroker(configService);
+  const loggerService = LoggerServiceFactory.createLoggerService();
+
+  /**
+   * Create and return a new instance of KafkaBroker.
+   * The KafkaBroker instance is initialized with the provided configuration and logger services.
+   */
+  return new KafkaBroker(configService, loggerService);
  }
 }

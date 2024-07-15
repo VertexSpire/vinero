@@ -1,147 +1,175 @@
 // src/services/amqp/brokers/sqs.broker.ts
 
-import { SQSService } from '../../../common/interfaces/message-queue.interface';
+import { SQS } from 'aws-sdk';
 import { ConfigService } from '../../config/config.service';
-import AWS from 'aws-sdk';
+import { MessageQueueService } from '../../../common/interfaces/message-queue.interface';
+import { LoggerService } from '../../logger/logger.service';
 
 /**
  * @class SQSBroker
- * @description Service for handling Amazon SQS operations. This class provides methods to connect, disconnect, publish, consume, and remove messages from SQS queues.
+ * @description Amazon SQS broker implementation for message queue operations. This class provides methods to connect, disconnect, publish, consume, and remove messages using Amazon SQS.
  */
-export class SQSBroker implements SQSService {
- /**
-  * @property {AWS.SQS} sqs - The AWS SQS instance.
-  * @description This property holds an instance of AWS.SQS, which is used to interact with the Amazon SQS service.
-  */
- private sqs: AWS.SQS;
-
- /**
-  * @property {ConfigService} configService - The ConfigService instance for accessing configuration settings.
-  * @description This property holds an instance of ConfigService, which provides access to configuration settings for the SQS service.
-  */
- private configService: ConfigService;
+export class SQSBroker implements MessageQueueService {
+ private sqs: SQS;
+ private readonly configService: ConfigService;
+ private readonly logger: LoggerService;
 
  /**
   * @constructor
-  * @description Constructor for SQSBroker class. It initializes the SQS service with the provided configuration settings.
+  * @description Constructor for SQSBroker class. It initializes the configService instance and sets up the SQS instance.
   * @param {ConfigService} configService - The ConfigService instance.
-  * @description The constructor assigns the provided ConfigService instance to the configService property and initializes the AWS.SQS instance with the configured region.
+  * @param {LoggerService} loggerService - The LoggerService instance.
   */
- constructor(configService: ConfigService) {
+ constructor(configService: ConfigService, loggerService: LoggerService) {
   this.configService = configService;
+  this.logger = loggerService;
+
+  this.sqs = new SQS({
+   region: this.configService.getValue<string>('sqs.region'),
+   accessKeyId: this.configService.getValue<string>('sqs.accessKeyId'),
+   secretAccessKey: this.configService.getValue<string>('sqs.secretAccessKey'),
+  });
+
   /**
-   * Update AWS configuration with the region from the configuration service.
-   * This ensures that the AWS SDK uses the correct region for all SQS operations.
+   * Log initialization.
+   * This helps in tracking that the SQSBroker has been properly initialized with necessary configurations.
    */
-  AWS.config.update({ region: this.configService.getValue<string>('sqs.region') });
-  /**
-   * Initialize the AWS SQS instance.
-   * This instance will be used to perform all SQS operations, such as sending and receiving messages.
-   */
-  this.sqs = new AWS.SQS();
+  this.logger.info('SQSBroker initialized with SQS instance.');
  }
 
  /**
   * @method connect
-  * @description Connect to the Amazon SQS service. SQS is a managed service and does not require explicit connection handling.
+  * @description Connect to the SQS service.
   * @returns {Promise<void>} - A promise that resolves when the connection is established.
   */
- async connect(): Promise<void> {
+ public async connect(): Promise<void> {
   /**
-   * Log a message indicating that the connection to SQS has been established.
-   * Since SQS is a managed service, this method does not need to perform any actual connection steps.
+   * Log the connection action.
+   * SQS does not require an explicit connection method, but this log ensures that we are aware of when the connection setup starts.
    */
-  console.log('Connected to SQS');
+  this.logger.info('Connecting to SQS.');
  }
 
  /**
   * @method disconnect
-  * @description Disconnect from the Amazon SQS service. SQS is a managed service and does not require explicit disconnection handling.
+  * @description Disconnect from the SQS service.
   * @returns {Promise<void>} - A promise that resolves when the disconnection is complete.
   */
- async disconnect(): Promise<void> {
+ public async disconnect(): Promise<void> {
   /**
-   * Log a message indicating that the disconnection from SQS has been completed.
-   * Since SQS is a managed service, this method does not need to perform any actual disconnection steps.
+   * Log the disconnection action.
+   * SQS does not require an explicit disconnection method, but this log ensures that we are aware of when the disconnection setup starts.
    */
-  console.log('Disconnected from SQS');
+  this.logger.info('Disconnecting from SQS.');
  }
 
  /**
   * @method publish
-  * @description Publish a message to the specified SQS queue.
-  * @param {string} queue - The URL of the SQS queue.
+  * @description Publish a message to the specified queue.
+  * @param {string} queue - The name of the queue.
   * @param {any} message - The message to publish.
   * @returns {Promise<void>} - A promise that resolves when the message is published.
   */
- async publish(queue: string, message: any): Promise<void> {
+ public async publish(queue: string, message: any): Promise<void> {
   /**
-   * Create the parameters for the sendMessage operation.
-   * The QueueUrl specifies the queue to send the message to, and the MessageBody contains the message to send.
+   * Log the publishing action.
+   * This provides visibility into the queue and message being published.
    */
-  const params = {
-   QueueUrl: queue,
-   MessageBody: JSON.stringify(message),
-  };
+  this.logger.info(`Publishing message to SQS queue: ${queue}`);
+
   /**
    * Send the message to the specified SQS queue.
-   * The sendMessage operation sends a message to the specified queue, and the promise resolves when the operation is complete.
+   * The message is converted to a JSON string before being sent.
    */
-  await this.sqs.sendMessage(params).promise();
+  await this.sqs
+   .sendMessage({
+    QueueUrl: this.configService.getValue<string>(`sqs.queues.${queue}`),
+    MessageBody: JSON.stringify(message),
+   })
+   .promise();
+
+  /**
+   * Log successful message publishing.
+   * This confirms that the message has been sent to the specified SQS queue.
+   */
+  this.logger.info(`Message published to SQS queue: ${queue}`);
  }
 
  /**
   * @method consume
-  * @description Consume messages from the specified SQS queue.
-  * @param {string} queue - The URL of the SQS queue.
+  * @description Consume messages from the specified queue.
+  * @param {string} queue - The name of the queue.
   * @returns {Promise<any[]>} - A promise that resolves to an array of messages.
   */
- async consume(queue: string): Promise<any[]> {
+ public async consume(queue: string): Promise<any[]> {
+  const messages: any[] = [];
+
   /**
-   * Create the parameters for the receiveMessage operation.
-   * The QueueUrl specifies the queue to receive messages from, and the MaxNumberOfMessages specifies the maximum number of messages to receive.
+   * Log the consumption action.
+   * This provides visibility into the queue from which messages are being consumed.
    */
-  const params = {
-   QueueUrl: queue,
-   MaxNumberOfMessages: 10,
-  };
+  this.logger.info(`Consuming messages from SQS queue: ${queue}`);
+
   /**
    * Receive messages from the specified SQS queue.
-   * The receiveMessage operation retrieves one or more messages from the specified queue, and the promise resolves with the retrieved messages.
+   * This step retrieves a batch of messages from the queue.
    */
-  const result = await this.sqs.receiveMessage(params).promise();
+  const result = await this.sqs
+   .receiveMessage({
+    QueueUrl: this.configService.getValue<string>(`sqs.queues.${queue}`),
+    MaxNumberOfMessages: 10,
+    WaitTimeSeconds: 20,
+   })
+   .promise();
+
   /**
-   * Extract the messages from the result and parse the message bodies.
-   * The result.Messages property contains an array of messages, and each message body is parsed from JSON.
+   * Process the received messages.
+   * Each message is parsed from JSON and added to the messages array.
    */
-  const messages = result.Messages ? result.Messages.map((m) => JSON.parse(m.Body as string)) : [];
+  if (result.Messages) {
+   for (const message of result.Messages) {
+    messages.push(JSON.parse(message.Body || '{}'));
+   }
+  }
+
   /**
-   * Return the array of parsed messages.
-   * This array contains the messages that were retrieved from the specified SQS queue.
+   * Log successful message consumption.
+   * This confirms that messages have been consumed from the specified SQS queue.
    */
+  this.logger.info(`Messages consumed from SQS queue: ${queue}`);
+
   return messages;
  }
 
  /**
   * @method remove
-  * @description Remove a message from the specified SQS queue.
-  * @param {string} queue - The URL of the SQS queue.
-  * @param {any} message - The message to remove, including the ReceiptHandle.
+  * @description Remove a message from the specified queue.
+  * @param {string} queue - The name of the queue.
+  * @param {any} message - The message to remove.
   * @returns {Promise<void>} - A promise that resolves when the message is removed.
   */
- async remove(queue: string, message: any): Promise<void> {
+ public async remove(queue: string, message: any): Promise<void> {
   /**
-   * Create the parameters for the deleteMessage operation.
-   * The QueueUrl specifies the queue to delete the message from, and the ReceiptHandle specifies the message to delete.
+   * Log the removal action.
+   * This provides visibility into the queue and message being removed.
    */
-  const params = {
-   QueueUrl: queue,
-   ReceiptHandle: message.ReceiptHandle,
-  };
+  this.logger.info(`Removing message from SQS queue: ${queue}`);
+
   /**
-   * Delete the message from the specified SQS queue.
-   * The deleteMessage operation deletes the specified message from the queue, and the promise resolves when the operation is complete.
+   * Remove the specified message from the queue.
+   * The message receipt handle is required to delete the message from the queue.
    */
-  await this.sqs.deleteMessage(params).promise();
+  await this.sqs
+   .deleteMessage({
+    QueueUrl: this.configService.getValue<string>(`sqs.queues.${queue}`),
+    ReceiptHandle: message.ReceiptHandle,
+   })
+   .promise();
+
+  /**
+   * Log successful message removal.
+   * This confirms that the message has been removed from the specified SQS queue.
+   */
+  this.logger.info(`Message removed from SQS queue: ${queue}`);
  }
 }

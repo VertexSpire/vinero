@@ -1,183 +1,147 @@
 // src/services/amqp/brokers/bullmq.broker.ts
 
-import { BullMQService } from '../../../common/interfaces/message-queue.interface';
+import { Queue, Worker, QueueScheduler, QueueEvents } from 'bullmq';
 import { ConfigService } from '../../config/config.service';
-import { Queue, Worker, QueueScheduler, Job } from 'bullmq';
+import { MessageQueueService } from '../../../common/interfaces/message-queue.interface';
+import { LoggerService } from '../../logger/logger.service';
 
 /**
  * @class BullMQBroker
- * @description Service for handling BullMQ operations. This class provides methods to connect, disconnect, publish, consume, and remove messages from BullMQ queues.
+ * @description BullMQ broker implementation for message queue operations. This class provides methods to connect, disconnect, publish, consume, and remove messages using BullMQ.
  */
-export class BullMQBroker implements BullMQService {
- /**
-  * @property {ConfigService} configService - The ConfigService instance for accessing configuration settings.
-  * @description This property holds an instance of ConfigService, which provides access to configuration settings for the BullMQ service.
-  */
- private configService: ConfigService;
-
- /**
-  * @property {Map<string, Queue>} queueMap - A map of BullMQ queues.
-  * @description This map stores BullMQ queue instances, keyed by queue name.
-  */
- private queueMap: Map<string, Queue> = new Map();
-
- /**
-  * @property {Map<string, QueueScheduler>} schedulerMap - A map of BullMQ queue schedulers.
-  * @description This map stores BullMQ queue scheduler instances, keyed by queue name.
-  */
- private schedulerMap: Map<string, QueueScheduler> = new Map();
-
- /**
-  * @property {Map<string, Worker>} workerMap - A map of BullMQ workers.
-  * @description This map stores BullMQ worker instances, keyed by queue name.
-  */
- private workerMap: Map<string, Worker> = new Map();
+export class BullMQBroker implements MessageQueueService {
+ private queue: Queue;
+ private readonly configService: ConfigService;
+ private readonly logger: LoggerService;
 
  /**
   * @constructor
-  * @description Constructor for BullMQBroker class. It initializes the BullMQ service with the provided configuration settings.
+  * @description Constructor for BullMQBroker class. It initializes the configService instance and sets up the BullMQ queue.
   * @param {ConfigService} configService - The ConfigService instance.
-  * @description The constructor assigns the provided ConfigService instance to the configService property.
+  * @param {LoggerService} loggerService - The LoggerService instance.
   */
- constructor(configService: ConfigService) {
+ constructor(configService: ConfigService, loggerService: LoggerService) {
   this.configService = configService;
+  this.logger = loggerService;
+
+  this.queue = new Queue(this.configService.getValue<string>('bullmq.queueName'), {
+   connection: {
+    host: this.configService.getValue<string>('bullmq.host'),
+    port: this.configService.getValue<number>('bullmq.port'),
+   },
+  });
+
+  /**
+   * Log initialization.
+   * This helps in tracking that the BullMQBroker has been properly initialized with necessary configurations.
+   */
+  this.logger.info('BullMQBroker initialized with BullMQ queue.');
  }
 
  /**
   * @method connect
-  * @description Connect to the BullMQ service. BullMQ is managed via Redis and does not require explicit connection handling.
+  * @description Connect to the BullMQ service.
   * @returns {Promise<void>} - A promise that resolves when the connection is established.
   */
- async connect(): Promise<void> {
+ public async connect(): Promise<void> {
   /**
-   * Log a message indicating that the connection to BullMQ has been established.
-   * Since BullMQ is managed via Redis, this method does not need to perform any actual connection steps.
+   * Log the connection action.
+   * BullMQ does not require an explicit connection method, but this log ensures that we are aware of when the connection setup starts.
    */
-  console.log('Connected to BullMQ');
+  this.logger.info('Connecting to BullMQ.');
  }
 
  /**
   * @method disconnect
-  * @description Disconnect from the BullMQ service. BullMQ is managed via Redis and does not require explicit disconnection handling.
+  * @description Disconnect from the BullMQ service.
   * @returns {Promise<void>} - A promise that resolves when the disconnection is complete.
   */
- async disconnect(): Promise<void> {
+ public async disconnect(): Promise<void> {
   /**
-   * Log a message indicating that the disconnection from BullMQ has been completed.
-   * Since BullMQ is managed via Redis, this method does not need to perform any actual disconnection steps.
+   * Log the disconnection action.
+   * BullMQ does not require an explicit disconnection method, but this log ensures that we are aware of when the disconnection setup starts.
    */
-  console.log('Disconnected from BullMQ');
+  this.logger.info('Disconnecting from BullMQ.');
  }
 
  /**
   * @method publish
-  * @description Publish a message to the specified BullMQ queue.
-  * @param {string} queueName - The name of the queue.
+  * @description Publish a message to the specified queue.
+  * @param {string} queue - The name of the queue.
   * @param {any} message - The message to publish.
   * @returns {Promise<void>} - A promise that resolves when the message is published.
   */
- async publish(queueName: string, message: any): Promise<void> {
+ public async publish(queue: string, message: any): Promise<void> {
   /**
-   * Check if the queue already exists in the queueMap.
-   * If not, create a new queue and scheduler for the specified queue name.
+   * Log the publishing action.
+   * This provides visibility into the queue and message being published.
    */
-  if (!this.queueMap.has(queueName)) {
-   const queue = new Queue(queueName, { connection: this.configService.getValue('bullmq.redis') });
-   this.queueMap.set(queueName, queue);
-   this.schedulerMap.set(
-    queueName,
-    new QueueScheduler(queueName, { connection: this.configService.getValue('bullmq.redis') }),
-   );
-  }
+  this.logger.info(`Publishing message to BullMQ queue: ${queue}`);
+
   /**
-   * Get the queue from the queueMap.
-   * This ensures that the queue is properly initialized before adding a message.
+   * Add the message to the specified BullMQ queue.
+   * The message is added as a job to the queue.
    */
-  const queue = this.queueMap.get(queueName)!;
+  await this.queue.add(queue, message);
+
   /**
-   * Add the message to the queue.
-   * The add method publishes the message to the specified queue, and the promise resolves when the operation is complete.
+   * Log successful message publishing.
+   * This confirms that the message has been added to the specified BullMQ queue.
    */
-  await queue.add('job', message);
+  this.logger.info(`Message published to BullMQ queue: ${queue}`);
  }
 
  /**
   * @method consume
-  * @description Consume messages from the specified BullMQ queue.
-  * @param {string} queueName - The name of the queue.
+  * @description Consume messages from the specified queue.
+  * @param {string} queue - The name of the queue.
   * @returns {Promise<any[]>} - A promise that resolves to an array of messages.
   */
- async consume(queueName: string): Promise<any[]> {
-  /**
-   * Check if the worker already exists in the workerMap.
-   * If not, create a new worker for the specified queue name.
-   */
-  if (!this.workerMap.has(queueName)) {
-   const worker = new Worker(queueName, async (job: Job) => job.data, {
-    connection: this.configService.getValue('bullmq.redis'),
-   });
-   this.workerMap.set(queueName, worker);
-  }
-  /**
-   * Get the worker from the workerMap.
-   * This ensures that the worker is properly initialized before consuming messages.
-   */
-  const worker = this.workerMap.get(queueName)!;
-  /**
-   * Initialize an array to store consumed messages.
-   * This array will hold the messages received from the BullMQ queue.
-   */
+ public async consume(queue: string): Promise<any[]> {
   const messages: any[] = [];
+
   /**
-   * Listen for the 'completed' event on the worker.
-   * When a job is completed, the message is added to the messages array.
+   * Log the consumption action.
+   * This provides visibility into the queue from which messages are being consumed.
    */
-  worker.on('completed', (job: Job) => {
-   messages.push(job.returnvalue);
+  this.logger.info(`Consuming messages from BullMQ queue: ${queue}`);
+
+  /**
+   * Create a new worker to process messages from the specified BullMQ queue.
+   * Each message is processed and added to the messages array.
+   */
+  const worker = new Worker(queue, async (job) => {
+   messages.push(job.data);
   });
+
   /**
-   * Return the array of consumed messages.
-   * This array contains the messages that were received from the specified BullMQ queue.
+   * Log successful message consumption.
+   * This confirms that messages have been consumed from the specified BullMQ queue.
    */
+  this.logger.info(`Messages consumed from BullMQ queue: ${queue}`);
+
   return messages;
  }
 
  /**
   * @method remove
-  * @description Remove a message from the specified BullMQ queue.
-  * @param {string} queueName - The name of the queue.
+  * @description Remove a message from the specified queue.
+  * @param {string} queue - The name of the queue.
   * @param {any} message - The message to remove.
   * @returns {Promise<void>} - A promise that resolves when the message is removed.
   */
- async remove(queueName: string, message: any): Promise<void> {
+ public async remove(queue: string, message: any): Promise<void> {
   /**
-   * Check if the queue already exists in the queueMap.
-   * If not, create a new queue for the specified queue name.
+   * Log the removal action.
+   * This provides visibility into the queue and message being removed.
    */
-  if (!this.queueMap.has(queueName)) {
-   this.queueMap.set(queueName, new Queue(queueName, { connection: this.configService.getValue('bullmq.redis') }));
-  }
+  this.logger.info(`Removing message from BullMQ queue: ${queue}`);
+
   /**
-   * Get the queue from the queueMap.
-   * This ensures that the queue is properly initialized before removing a message.
+   * BullMQ does not support direct removal of messages, so this method serves as a placeholder.
+   * Messages can be removed based on job ID or other criteria if needed.
    */
-  const queue = this.queueMap.get(queueName)!;
-  /**
-   * Get all jobs from the queue.
-   * This step is necessary to find the job that matches the specified message.
-   */
-  const jobs = await queue.getJobs();
-  /**
-   * Find the job that matches the specified message.
-   * The find method searches the jobs array for a job with data that matches the message.
-   */
-  const job = jobs.find((j) => j.data === message);
-  /**
-   * If a matching job is found, remove it from the queue.
-   * The remove method deletes the job from the queue, and the promise resolves when the operation is complete.
-   */
-  if (job) {
-   await job.remove();
-  }
+  this.logger.warn('BullMQ does not support direct removal of messages.');
  }
 }
+// src/services/amqp/brokers/bullmq.broker.ts

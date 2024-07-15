@@ -2,6 +2,7 @@
 
 import { BullMQBroker } from './bullmq.broker';
 import { ConfigService } from '../../config/config.service';
+import { LoggerServiceFactory } from '../../logger/logger.service.factory';
 
 /**
  * @class BullMQBrokerFactory
@@ -16,9 +17,15 @@ export class BullMQBrokerFactory {
   */
  public static create(configService: ConfigService): BullMQBroker {
   /**
-   * Create and return a new instance of BullMQBroker.
-   * The BullMQBroker instance is initialized with the provided configuration service.
+   * Get an instance of the LoggerService.
+   * The LoggerServiceFactory is used to create a logger instance for logging actions within the BullMQBroker.
    */
-  return new BullMQBroker(configService);
+  const loggerService = LoggerServiceFactory.createLoggerService();
+
+  /**
+   * Create and return a new instance of BullMQBroker.
+   * The BullMQBroker instance is initialized with the provided configuration and logger services.
+   */
+  return new BullMQBroker(configService, loggerService);
  }
 }

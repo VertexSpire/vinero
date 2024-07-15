@@ -2,6 +2,7 @@
 
 import { RabbitMQBroker } from './rabbitmq.broker';
 import { ConfigService } from '../../config/config.service';
+import { LoggerServiceFactory } from '../../logger/logger.service.factory';
 
 /**
  * @class RabbitMQBrokerFactory
@@ -16,9 +17,15 @@ export class RabbitMQBrokerFactory {
   */
  public static create(configService: ConfigService): RabbitMQBroker {
   /**
-   * Create and return a new instance of RabbitMQBroker.
-   * The RabbitMQBroker instance is initialized with the provided configuration service.
+   * Get an instance of the LoggerService.
+   * The LoggerServiceFactory is used to create a logger instance for logging actions within the RabbitMQBroker.
    */
-  return new RabbitMQBroker(configService);
+  const loggerService = LoggerServiceFactory.createLoggerService();
+
+  /**
+   * Create and return a new instance of RabbitMQBroker.
+   * The RabbitMQBroker instance is initialized with the provided configuration and logger services.
+   */
+  return new RabbitMQBroker(configService, loggerService);
  }
 }
