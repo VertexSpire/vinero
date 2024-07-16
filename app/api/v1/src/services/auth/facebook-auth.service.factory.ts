@@ -1,40 +1,38 @@
-// src/services/auth/facebook-auth.service.factory.ts
+// src/core/hooks/hooks.factory.ts
 
-import { AuthStrategy } from './auth.interface';
-import { AuthServiceFactory } from './abstract/auth.service.factory';
-import { FacebookAuthService } from './facebook-auth.service';
-import { UserService } from '../user/user.service';
-import { TokenService } from '../token/token.service';
+import { Hooks } from './hooks';
+import { LoggerService } from '../../services/logger/logger.service';
+import { LoggerServiceFactory } from '../../services/logger/logger.service.factory';
 
 /**
- * @class FacebookAuthServiceFactory
- * @extends AuthServiceFactory
- * @description Factory class for creating instances of the FacebookAuthService. This factory provides a method to
- * instantiate new FacebookAuthService objects, encapsulating the creation logic and promoting consistency and
- * ease of maintenance.
+ * @class HooksFactory
+ * @description Factory for creating instances of the Hooks class and injecting necessary services such as the LoggerService.
+ * The factory pattern is used to encapsulate the creation logic of the Hooks class and its dependencies, providing a clean and
+ * maintainable way to manage object creation.
  */
-export class FacebookAuthServiceFactory extends AuthServiceFactory {
+export class HooksFactory {
  /**
-  * @method createAuthService
-  * @description Creates and returns a new instance of FacebookAuthService. This method abstracts the instantiation
-  * process, allowing for easy creation of FacebookAuthService objects without needing to directly call the constructor.
-  *
-  * @returns {FacebookAuthService} - A new instance of FacebookAuthService. This instance can be used to handle
-  * authentication using Facebook's OAuth service, managing user authentication and token generation.
+  * @method createLoggerService
+  * @description Create and return an instance of LoggerService.
+  * This method abstracts the creation of the LoggerService instance, allowing for easy modifications and dependency management.
+  * @returns {LoggerService} - An instance of LoggerService.
+  * The returned LoggerService instance is created using the LoggerServiceFactory, ensuring consistent and centralized management
+  * of the logger service creation.
   */
- public createAuthService(): FacebookAuthService {
-  /**
-   * Create instances of the required services.
-   * The UserService and TokenService instances are created here.
-   * Necessary dependencies for these services should be injected.
-   */
-  const userService = new UserService(/* inject necessary dependencies here */);
-  const tokenService = new TokenService(/* inject necessary dependencies here */);
+ public static createLoggerService(): LoggerService {
+  return LoggerServiceFactory.createLoggerService();
+ }
 
-  /**
-   * Return a new instance of FacebookAuthService with the created services.
-   * The UserService and TokenService instances are passed to the FacebookAuthService constructor.
-   */
-  return new FacebookAuthService(userService, tokenService);
+ /**
+  * @method createHooks
+  * @description Create and return an instance of the Hooks class with an injected LoggerService.
+  * This method abstracts the creation of the Hooks instance, ensuring that it is always created with the necessary dependencies.
+  * @returns {Hooks} - An instance of the Hooks class.
+  * The returned Hooks instance is created with a LoggerService instance injected into it, allowing the Hooks class to log actions
+  * and events effectively.
+  */
+ public static createHooks(): Hooks {
+  const loggerService = HooksFactory.createLoggerService();
+  return new Hooks(loggerService);
  }
 }
