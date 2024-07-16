@@ -19,9 +19,13 @@ export class AMQPService implements MessageQueueService {
   * @param {MessageQueueService} brokerService - The instance of the broker service.
   */
  constructor(brokerService: MessageQueueService) {
-  /**
+  /*
    * Assign the provided broker service instance to the class property.
    * This instance will be used to perform all message queue operations.
+   * The brokerService parameter is expected to be an instance of a class
+   * that implements the MessageQueueService interface. This design allows
+   * for flexibility in using different message queue services (e.g., RabbitMQ, SQS, Kafka, BullMQ)
+   * without changing the AMQPService class itself.
    */
   this.brokerService = brokerService;
  }
@@ -32,9 +36,12 @@ export class AMQPService implements MessageQueueService {
   * @returns {Promise<void>} - A promise that resolves when the connection is established.
   */
  async connect(): Promise<void> {
-  /**
+  /*
    * Delegate the connect operation to the broker service.
    * This ensures that the connection logic specific to the broker is handled by the broker service.
+   * By using this delegation, the AMQPService class does not need to contain
+   * broker-specific connection logic, adhering to the single responsibility principle
+   * and promoting code reusability and maintainability.
    */
   await this.brokerService.connect();
  }
@@ -45,9 +52,11 @@ export class AMQPService implements MessageQueueService {
   * @returns {Promise<void>} - A promise that resolves when the disconnection is complete.
   */
  async disconnect(): Promise<void> {
-  /**
+  /*
    * Delegate the disconnect operation to the broker service.
    * This ensures that the disconnection logic specific to the broker is handled by the broker service.
+   * This approach keeps the AMQPService class independent of the underlying broker's
+   * disconnection process, allowing for easier updates and changes to the broker implementation.
    */
   await this.brokerService.disconnect();
  }
@@ -60,9 +69,11 @@ export class AMQPService implements MessageQueueService {
   * @returns {Promise<void>} - A promise that resolves when the message is published.
   */
  async publish(queue: string, message: any): Promise<void> {
-  /**
+  /*
    * Delegate the publish operation to the broker service.
    * This ensures that the publishing logic specific to the broker is handled by the broker service.
+   * By delegating this task, the AMQPService class remains agnostic to the specifics
+   * of how messages are published, making it easier to swap out the broker service if needed.
    */
   await this.brokerService.publish(queue, message);
  }
@@ -74,9 +85,11 @@ export class AMQPService implements MessageQueueService {
   * @returns {Promise<any[]>} - A promise that resolves to an array of messages.
   */
  async consume(queue: string): Promise<any[]> {
-  /**
+  /*
    * Delegate the consume operation to the broker service.
    * This ensures that the consuming logic specific to the broker is handled by the broker service.
+   * The AMQPService class leverages the broker service's implementation to retrieve messages,
+   * promoting separation of concerns and making the codebase more modular and maintainable.
    */
   return await this.brokerService.consume(queue);
  }
@@ -89,9 +102,12 @@ export class AMQPService implements MessageQueueService {
   * @returns {Promise<void>} - A promise that resolves when the message is removed.
   */
  async remove(queue: string, message: any): Promise<void> {
-  /**
+  /*
    * Delegate the remove operation to the broker service.
    * This ensures that the removal logic specific to the broker is handled by the broker service.
+   * By offloading this responsibility to the broker service, the AMQPService class
+   * maintains a clear and concise API for interacting with message queues,
+   * while the underlying complexity is managed by the broker service.
    */
   await this.brokerService.remove(queue, message);
  }

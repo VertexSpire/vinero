@@ -1,5 +1,3 @@
-// src/services/amqp/brokers/kafka.broker.factory.ts
-
 import { KafkaBroker } from './kafka.broker';
 import { ConfigService } from '../../config/config.service';
 import { LoggerServiceFactory } from '../../logger/logger.service.factory';
@@ -19,12 +17,14 @@ export class KafkaBrokerFactory {
   /**
    * Get an instance of the LoggerService.
    * The LoggerServiceFactory is used to create a logger instance for logging actions within the KafkaBroker.
+   * This logger service will be passed to the KafkaBroker for logging purposes.
    */
   const loggerService = LoggerServiceFactory.createLoggerService();
 
   /**
    * Create and return a new instance of KafkaBroker.
    * The KafkaBroker instance is initialized with the provided configuration and logger services.
+   * This ensures that the KafkaBroker has all necessary dependencies to function correctly.
    */
   return new KafkaBroker(configService, loggerService);
  }

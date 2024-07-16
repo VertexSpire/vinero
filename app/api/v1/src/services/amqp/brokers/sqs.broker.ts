@@ -1,5 +1,3 @@
-// src/services/amqp/brokers/sqs.broker.ts
-
 import { SQS } from 'aws-sdk';
 import { ConfigService } from '../../config/config.service';
 import { MessageQueueService } from '../../../common/interfaces/message-queue.interface';
@@ -10,8 +8,24 @@ import { LoggerService } from '../../logger/logger.service';
  * @description Amazon SQS broker implementation for message queue operations. This class provides methods to connect, disconnect, publish, consume, and remove messages using Amazon SQS.
  */
 export class SQSBroker implements MessageQueueService {
+ /**
+  * @private
+  * @description The SQS instance for interacting with Amazon SQS. It is initialized using configuration settings provided by ConfigService.
+  */
  private sqs: SQS;
+
+ /**
+  * @private
+  * @readonly
+  * @description The ConfigService instance for accessing configuration settings. This service provides necessary configuration values for setting up SQS.
+  */
  private readonly configService: ConfigService;
+
+ /**
+  * @private
+  * @readonly
+  * @description The LoggerService instance for logging information, warnings, and errors. This service is used for tracking and debugging purposes.
+  */
  private readonly logger: LoggerService;
 
  /**
@@ -40,6 +54,7 @@ export class SQSBroker implements MessageQueueService {
  /**
   * @method connect
   * @description Connect to the SQS service.
+  * This method logs the connection action. SQS does not require an explicit connection method, but logging ensures that we are aware of when the connection setup starts.
   * @returns {Promise<void>} - A promise that resolves when the connection is established.
   */
  public async connect(): Promise<void> {
@@ -53,6 +68,7 @@ export class SQSBroker implements MessageQueueService {
  /**
   * @method disconnect
   * @description Disconnect from the SQS service.
+  * This method logs the disconnection action. SQS does not require an explicit disconnection method, but logging ensures that we are aware of when the disconnection setup starts.
   * @returns {Promise<void>} - A promise that resolves when the disconnection is complete.
   */
  public async disconnect(): Promise<void> {
@@ -66,6 +82,7 @@ export class SQSBroker implements MessageQueueService {
  /**
   * @method publish
   * @description Publish a message to the specified queue.
+  * This method sends a message to a RabbitMQ queue by asserting the queue and sending the message as a buffer.
   * @param {string} queue - The name of the queue.
   * @param {any} message - The message to publish.
   * @returns {Promise<void>} - A promise that resolves when the message is published.
@@ -98,6 +115,7 @@ export class SQSBroker implements MessageQueueService {
  /**
   * @method consume
   * @description Consume messages from the specified queue.
+  * This method retrieves messages from a RabbitMQ queue by asserting the queue and setting up a consumer.
   * @param {string} queue - The name of the queue.
   * @returns {Promise<any[]>} - A promise that resolves to an array of messages.
   */
@@ -144,6 +162,7 @@ export class SQSBroker implements MessageQueueService {
  /**
   * @method remove
   * @description Remove a message from the specified queue.
+  * This method removes a message from a RabbitMQ queue by asserting the queue and setting up a consumer.
   * @param {string} queue - The name of the queue.
   * @param {any} message - The message to remove.
   * @returns {Promise<void>} - A promise that resolves when the message is removed.
