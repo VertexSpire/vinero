@@ -1,166 +1,190 @@
 // src/services/amqp/brokers/kafka.broker.ts
 
-import { KafkaService } from '../../../common/interfaces/message-queue.interface';
-import { ConfigService } from '../../config/config.service';
 import { Kafka, Producer, Consumer } from 'kafkajs';
+import { ConfigService } from '../../config/config.service';
+import { MessageQueueService } from '../../../common/interfaces/message-queue.interface';
+import { LoggerService } from '../../logger/logger.service';
 
 /**
  * @class KafkaBroker
- * @description Service for handling Kafka operations. This class provides methods to connect, disconnect, publish, consume, and remove messages from Kafka topics.
+ * @description Kafka broker implementation for message queue operations. This class provides methods to connect, disconnect, publish, consume, and remove messages using Kafka.
  */
-export class KafkaBroker implements KafkaService {
- /**
-  * @property {Kafka} kafka - The Kafka instance.
-  * @description This property holds an instance of Kafka, which is used to interact with the Kafka service.
-  */
+export class KafkaBroker implements MessageQueueService {
  private kafka: Kafka;
-
- /**
-  * @property {Producer} producer - The Kafka producer instance.
-  * @description This property holds an instance of Kafka producer, which is used to send messages to Kafka topics.
-  */
  private producer: Producer;
-
- /**
-  * @property {Consumer} consumer - The Kafka consumer instance.
-  * @description This property holds an instance of Kafka consumer, which is used to receive messages from Kafka topics.
-  */
  private consumer: Consumer;
-
- /**
-  * @property {ConfigService} configService - The ConfigService instance for accessing configuration settings.
-  * @description This property holds an instance of ConfigService, which provides access to configuration settings for the Kafka service.
-  */
- private configService: ConfigService;
+ private readonly configService: ConfigService;
+ private readonly logger: LoggerService;
 
  /**
   * @constructor
-  * @description Constructor for KafkaBroker class. It initializes the Kafka service with the provided configuration settings.
+  * @description Constructor for KafkaBroker class. It initializes the configService instance and sets up the Kafka instance.
   * @param {ConfigService} configService - The ConfigService instance.
-  * @description The constructor assigns the provided ConfigService instance to the configService property and initializes the Kafka instance with the configured brokers.
+  * @param {LoggerService} loggerService - The LoggerService instance.
   */
- constructor(configService: ConfigService) {
+ constructor(configService: ConfigService, loggerService: LoggerService) {
   this.configService = configService;
-  /**
-   * Initialize the Kafka instance with the brokers from the configuration service.
-   * This instance will be used to create producer and consumer instances for interacting with Kafka topics.
-   */
-  this.kafka = new Kafka({ brokers: this.configService.getValue<string[]>('kafka.brokers') });
-  /**
-   * Initialize the Kafka producer instance.
-   * This instance will be used to send messages to Kafka topics.
-   */
+  this.logger = loggerService;
+
+  this.kafka = new Kafka({
+   clientId: this.configService.getValue<string>('kafka.clientId'),
+   brokers: this.configService.getValue<string[]>('kafka.brokers'),
+  });
+
   this.producer = this.kafka.producer();
+  this.consumer = this.kafka.consumer({ groupId: this.configService.getValue<string>('kafka.groupId') });
+
   /**
-   * Initialize the Kafka consumer instance.
-   * This instance will be used to receive messages from Kafka topics.
+   * Log initialization.
+   * This helps in tracking that the KafkaBroker has been properly initialized with necessary configurations.
    */
-  this.consumer = this.kafka.consumer({ groupId: 'my-group' });
+  this.logger.info('KafkaBroker initialized with Kafka client, producer, and consumer.');
  }
 
  /**
   * @method connect
-  * @description Connect to the Kafka service by connecting the producer and consumer instances.
+  * @description Connect to the Kafka service.
   * @returns {Promise<void>} - A promise that resolves when the connection is established.
   */
- async connect(): Promise<void> {
+ public async connect(): Promise<void> {
   /**
-   * Connect the Kafka producer instance.
-   * This method establishes a connection to the Kafka brokers for sending messages.
+   * Log the start of the connection process.
+   * This step ensures that we are aware of when the connection to Kafka starts.
+   */
+  this.logger.info('Connecting Kafka producer and consumer.');
+
+  /**
+   * Establish connection with the Kafka producer.
+   * The await keyword ensures that the function waits for the connection to be established before proceeding.
    */
   await this.producer.connect();
+
   /**
-   * Connect the Kafka consumer instance.
-   * This method establishes a connection to the Kafka brokers for receiving messages.
+   * Establish connection with the Kafka consumer.
+   * This ensures that the consumer is ready to consume messages from the specified Kafka topics.
    */
   await this.consumer.connect();
+
+  /**
+   * Log successful connection.
+   * This confirms that both the producer and consumer are connected to Kafka.
+   */
+  this.logger.info('Kafka producer and consumer connected.');
  }
 
  /**
   * @method disconnect
-  * @description Disconnect from the Kafka service by disconnecting the producer and consumer instances.
+  * @description Disconnect from the Kafka service.
   * @returns {Promise<void>} - A promise that resolves when the disconnection is complete.
   */
- async disconnect(): Promise<void> {
+ public async disconnect(): Promise<void> {
   /**
-   * Disconnect the Kafka producer instance.
-   * This method closes the connection to the Kafka brokers for sending messages.
+   * Log the start of the disconnection process.
+   * This step ensures that we are aware of when the disconnection from Kafka starts.
+   */
+  this.logger.info('Disconnecting Kafka producer and consumer.');
+
+  /**
+   * Disconnect the Kafka producer.
+   * This ensures that the producer stops sending messages to Kafka.
    */
   await this.producer.disconnect();
+
   /**
-   * Disconnect the Kafka consumer instance.
-   * This method closes the connection to the Kafka brokers for receiving messages.
+   * Disconnect the Kafka consumer.
+   * This ensures that the consumer stops receiving messages from Kafka.
    */
   await this.consumer.disconnect();
+
+  /**
+   * Log successful disconnection.
+   * This confirms that both the producer and consumer are disconnected from Kafka.
+   */
+  this.logger.info('Kafka producer and consumer disconnected.');
  }
 
  /**
   * @method publish
-  * @description Publish a message to the specified Kafka topic.
-  * @param {string} topic - The name of the Kafka topic.
+  * @description Publish a message to the specified topic.
+  * @param {string} topic - The name of the topic.
   * @param {any} message - The message to publish.
   * @returns {Promise<void>} - A promise that resolves when the message is published.
   */
- async publish(topic: string, message: any): Promise<void> {
+ public async publish(topic: string, message: any): Promise<void> {
   /**
-   * Send the message to the specified Kafka topic.
-   * The send method publishes the message to the Kafka topic, and the promise resolves when the operation is complete.
+   * Log the publishing action.
+   * This provides visibility into the topic and message being published.
+   */
+  this.logger.info(`Publishing message to topic: ${topic}`);
+
+  /**
+   * Publish the message to the specified Kafka topic.
+   * The message is converted to a JSON string before being sent.
    */
   await this.producer.send({
    topic,
    messages: [{ value: JSON.stringify(message) }],
   });
+
+  /**
+   * Log successful message publishing.
+   * This confirms that the message has been sent to the specified Kafka topic.
+   */
+  this.logger.info(`Message published to topic: ${topic}`);
  }
 
  /**
   * @method consume
-  * @description Consume messages from the specified Kafka topic.
-  * @param {string} topic - The name of the Kafka topic.
+  * @description Consume messages from the specified topic.
+  * @param {string} topic - The name of the topic.
   * @returns {Promise<any[]>} - A promise that resolves to an array of messages.
   */
- async consume(topic: string): Promise<any[]> {
+ public async consume(topic: string): Promise<any[]> {
+  const messages: any[] = [];
+
+  /**
+   * Log the consumption action.
+   * This provides visibility into the topic from which messages are being consumed.
+   */
+  this.logger.info(`Consuming messages from topic: ${topic}`);
+
   /**
    * Subscribe to the specified Kafka topic.
-   * The subscribe method registers the consumer to receive messages from the Kafka topic.
+   * The fromBeginning option ensures that messages are consumed from the start of the topic.
    */
-  await this.consumer.subscribe({ topic });
+  await this.consumer.subscribe({ topic, fromBeginning: true });
+
   /**
-   * Initialize an array to store consumed messages.
-   * This array will hold the messages received from the Kafka topic.
-   */
-  const messages: any[] = [];
-  /**
-   * Run the consumer to process messages from the Kafka topic.
-   * The run method starts the consumer to receive and process messages.
+   * Run the consumer to process messages from the topic.
+   * Each message is parsed from JSON and added to the messages array.
    */
   await this.consumer.run({
    eachMessage: async ({ message }) => {
-    /**
-     * Parse and store the message.
-     * The message.value contains the message data, which is parsed from JSON and added to the messages array.
-     */
-    messages.push(JSON.parse(message.value!.toString()));
+    messages.push(JSON.parse(message.value?.toString() || '{}'));
    },
   });
+
   /**
-   * Return the array of consumed messages.
-   * This array contains the messages that were received from the specified Kafka topic.
+   * Log successful message consumption.
+   * This confirms that messages have been consumed from the specified Kafka topic.
    */
+  this.logger.info(`Messages consumed from topic: ${topic}`);
+
   return messages;
  }
 
  /**
   * @method remove
-  * @description Remove a message from the specified Kafka topic. Note: Kafka does not support removing a specific message from the topic.
-  * @param {string} topic - The name of the Kafka topic.
+  * @description Remove a message from the specified topic.
+  * @param {string} topic - The name of the topic.
   * @param {any} message - The message to remove.
   * @returns {Promise<void>} - A promise that resolves when the message is removed.
   */
- async remove(topic: string, message: any): Promise<void> {
+ public async remove(topic: string, message: any): Promise<void> {
   /**
-   * Log a warning that Kafka does not support removing a specific message from the topic.
-   * This method logs a warning to indicate that the remove operation is not supported by Kafka.
+   * Log a warning for unsupported operation.
+   * Kafka does not support direct removal of messages, so this method serves as a placeholder.
    */
-  console.warn('Kafka does not support removing a specific message from the topic');
+  this.logger.warn('Kafka does not support direct removal of messages.');
  }
 }
