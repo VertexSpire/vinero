@@ -9,12 +9,20 @@ import { storageConfig } from '../../../config/storage';
  *
  * This factory class provides a method to create an instance of the Google Cloud storage service
  * based on configuration settings.
+ *
+ * @class
+ * @constructor
+ * @method createStorageService
+ * @returns {IStorageService} The Google Cloud storage service instance implementing the IStorageService interface.
+ * @throws {Error} if configuration values are missing or incorrect.
+ * @author Wasif Farooq
  */
 export class GoogleCloudStorageFactory {
  /**
   * Creates a Google Cloud storage service.
   *
-  * @returns The Google Cloud storage service instance implementing the IStorageService interface.
+  * @returns {IStorageService} The Google Cloud storage service instance implementing the IStorageService interface.
+  * @throws {Error} if configuration values are missing or incorrect.
   */
  createStorageService(): IStorageService {
   /*

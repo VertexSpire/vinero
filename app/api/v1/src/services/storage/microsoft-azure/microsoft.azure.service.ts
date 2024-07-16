@@ -1,5 +1,3 @@
-// src/services/storage/microsoft-azure/microsoft.azure.service.ts
-
 import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
 import axios from 'axios';
 import { IStorageService } from '../../../common/interfaces/storage.interface';
@@ -13,28 +11,46 @@ import { PreSignedUrlException } from '../../../exception/pre-signed-url.excepti
  *
  * This class provides methods to interact with Azure Blob Storage, including upload, download,
  * remove, generate pre-signed URLs, upload to pre-signed URLs, and get file view URLs.
+ *
+ * @class
+ * @implements {IStorageService}
+ * @public
+ * @classdesc This class serves as the service layer for performing various operations with Azure Blob Storage.
+ * It leverages Azure SDK to facilitate the interaction with the storage account and container.
+ * @see {@link https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blobs-overview}
+ * @author Wasif Farooq
  */
 export class MicrosoftAzureService implements IStorageService {
  /**
   * Azure Blob Service client instance.
+  *
+  * This client is used to interact with the Azure Blob Storage service.
+  *
   * @private
+  * @type {BlobServiceClient}
   */
  private blobServiceClient: BlobServiceClient;
 
  /**
   * Name of the Azure Blob Storage container.
+  *
+  * This is the container where all blobs will be stored.
+  *
   * @private
+  * @type {string}
   */
  private containerName: string;
 
  /**
   * Creates a new MicrosoftAzureService instance.
   *
-  * @param accountName - The Azure storage account name.
-  * @param accountKey - The Azure storage account key.
-  * @param containerName - The name of the Azure blob container.
+  * @param {string} accountName - The Azure storage account name.
+  * @param {string} accountKey - The Azure storage account key.
+  * @param {string} containerName - The name of the Azure blob container.
   *
   * Initializes the Blob Service client with the provided account credentials and container name.
+  *
+  * @constructor
   */
  constructor(accountName: string, accountKey: string, containerName: string) {
   /*
@@ -52,10 +68,10 @@ export class MicrosoftAzureService implements IStorageService {
  /**
   * Uploads a file to Azure Blob Storage.
   *
-  * @param file - The file content as a Buffer.
-  * @param options - Optional parameters for upload (e.g., key, contentType).
-  * @returns A Promise resolving to the URL of the uploaded blob.
-  * @throws UploadException if an error occurs during upload.
+  * @param {Buffer} file - The file content as a Buffer.
+  * @param {any} [options] - Optional parameters for upload (e.g., key, contentType).
+  * @returns {Promise<string>} A Promise resolving to the URL of the uploaded blob.
+  * @throws {UploadException} if an error occurs during upload.
   */
  async upload(file: Buffer, options?: any): Promise<string> {
   try {
@@ -89,10 +105,10 @@ export class MicrosoftAzureService implements IStorageService {
  /**
   * Downloads a file from Azure Blob Storage.
   *
-  * @param fileName - The name of the file to download.
-  * @param options - Optional parameters for download.
-  * @returns A Promise resolving to the file content as a Buffer.
-  * @throws DownloadException if an error occurs during download.
+  * @param {string} fileName - The name of the file to download.
+  * @param {any} [options] - Optional parameters for download.
+  * @returns {Promise<Buffer>} A Promise resolving to the file content as a Buffer.
+  * @throws {DownloadException} if an error occurs during download.
   */
  async download(fileName: string, options?: any): Promise<Buffer> {
   try {
@@ -118,9 +134,10 @@ export class MicrosoftAzureService implements IStorageService {
  /**
   * Removes a file from Azure Blob Storage.
   *
-  * @param fileName - The name of the file to remove.
-  * @param options - Optional parameters for removal.
-  * @throws RemoveException if an error occurs during file removal.
+  * @param {string} fileName - The name of the file to remove.
+  * @param {any} [options] - Optional parameters for removal.
+  * @returns {Promise<void>}
+  * @throws {RemoveException} if an error occurs during file removal.
   */
  async remove(fileName: string, options?: any): Promise<void> {
   try {
@@ -145,10 +162,10 @@ export class MicrosoftAzureService implements IStorageService {
  /**
   * Generates a pre-signed URL for accessing a file in Azure Blob Storage.
   *
-  * @param fileName - The name of the file to generate the URL for.
-  * @param options - Optional parameters for URL generation (e.g., expires).
-  * @returns A Promise resolving to the pre-signed URL.
-  * @throws PreSignedUrlException if an error occurs during URL generation.
+  * @param {string} fileName - The name of the file to generate the URL for.
+  * @param {any} [options] - Optional parameters for URL generation (e.g., expires).
+  * @returns {Promise<string>} A Promise resolving to the pre-signed URL.
+  * @throws {PreSignedUrlException} if an error occurs during URL generation.
   */
  async getPreSignedUrl(fileName: string, options?: any): Promise<string> {
   try {
@@ -186,10 +203,11 @@ export class MicrosoftAzureService implements IStorageService {
  /**
   * Uploads a file to a pre-signed URL.
   *
-  * @param url - The pre-signed URL to upload the file to.
-  * @param file - The file content as a Buffer.
-  * @param options - Optional parameters for upload (e.g., contentType).
-  * @throws UploadException if an error occurs during upload.
+  * @param {string} url - The pre-signed URL to upload the file to.
+  * @param {Buffer} file - The file content as a Buffer.
+  * @param {any} [options] - Optional parameters for upload (e.g., contentType).
+  * @returns {Promise<void>}
+  * @throws {UploadException} if an error occurs during upload.
   */
  async uploadToPreSignedUrl(url: string, file: Buffer, options?: any): Promise<void> {
   try {
@@ -212,10 +230,10 @@ export class MicrosoftAzureService implements IStorageService {
  /**
   * Generates a pre-signed URL for viewing a file in Azure Blob Storage.
   *
-  * @param fileName - The name of the file to generate the URL for.
-  * @param options - Optional parameters for URL generation (e.g., expires).
-  * @returns A Promise resolving to the pre-signed URL for file viewing.
-  * @throws PreSignedUrlException if an error occurs during URL generation.
+  * @param {string} fileName - The name of the file to generate the URL for.
+  * @param {any} [options] - Optional parameters for URL generation (e.g., expires).
+  * @returns {Promise<string>} A Promise resolving to the pre-signed URL for file viewing.
+  * @throws {PreSignedUrlException} if an error occurs during URL generation.
   */
  async getFileViewUrl(fileName: string, options?: any): Promise<string> {
   try {

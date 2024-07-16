@@ -11,8 +11,18 @@ import { PreSignedUrlException } from '../../../exception/pre-signed-url.excepti
 /**
  * Service class for Google Cloud storage operations.
  *
- * This class provides methods to interact with Google Cloud Storage, including upload, download,
- * remove, generate pre-signed URLs, upload to pre-signed URLs, and get file view URLs.
+ * This class provides methods to interact with Google Cloud Storage, including uploading files,
+ * downloading files, removing files, generating pre-signed URLs, uploading to pre-signed URLs,
+ * and generating URLs for viewing files.
+ *
+ * The class leverages the Google Cloud Storage client to perform these operations and handles
+ * exceptions by throwing custom exceptions specific to each operation.
+ *
+ * @class
+ * @implements {IStorageService}
+ * @see {@link https://cloud.google.com/storage/docs/overview|Google Cloud Storage Documentation}
+ * @see {@link IStorageService}
+ * @author Wasif Farooq
  */
 export class GoogleCloudService implements IStorageService {
  /**
@@ -59,12 +69,13 @@ export class GoogleCloudService implements IStorageService {
   try {
    /*
     * Access the bucket and file object to perform the upload operation.
+    * Create a reference to the file in the specified bucket using the provided key.
     */
    const bucket = this.storage.bucket(this.bucketName);
    const fileUpload = bucket.file(options.key);
 
    /*
-    * Save the file to Google Cloud Storage with metadata.
+    * Save the file to Google Cloud Storage with metadata such as content type.
     */
    await fileUpload.save(file, {
     metadata: { contentType: options.contentType },
@@ -72,11 +83,13 @@ export class GoogleCloudService implements IStorageService {
 
    /*
     * Return the public URL of the uploaded file.
+    * This URL can be used to access the file directly from the web.
     */
    return `https://storage.googleapis.com/${this.bucketName}/${options.key}`;
   } catch (error) {
    /*
     * If an error occurs during upload, throw an UploadException with the error message.
+    * This exception provides a specific error message indicating the upload failure.
     */
    throw new UploadException(error.message);
   }
@@ -94,22 +107,26 @@ export class GoogleCloudService implements IStorageService {
   try {
    /*
     * Access the bucket and file object to perform the download operation.
+    * Create a reference to the file in the specified bucket using the provided file name.
     */
    const bucket = this.storage.bucket(this.bucketName);
    const file = bucket.file(fileName);
 
    /*
     * Download the file content from Google Cloud Storage.
+    * The content is returned as a Buffer which can be used for further processing.
     */
    const [data] = await file.download();
 
    /*
     * Return the file content as a Buffer.
+    * This allows the caller to handle the file content as needed.
     */
    return data;
   } catch (error) {
    /*
     * If an error occurs during download, throw a DownloadException with the error message.
+    * This exception provides a specific error message indicating the download failure.
     */
    throw new DownloadException(error.message);
   }
@@ -126,17 +143,20 @@ export class GoogleCloudService implements IStorageService {
   try {
    /*
     * Access the bucket and file object to perform the file removal operation.
+    * Create a reference to the file in the specified bucket using the provided file name.
     */
    const bucket = this.storage.bucket(this.bucketName);
    const file = bucket.file(fileName);
 
    /*
     * Delete the file from Google Cloud Storage.
+    * This operation removes the file from the storage bucket.
     */
    await file.delete();
   } catch (error) {
    /*
     * If an error occurs during file removal, throw a RemoveException with the error message.
+    * This exception provides a specific error message indicating the removal failure.
     */
    throw new RemoveException(error.message);
   }
@@ -154,12 +174,14 @@ export class GoogleCloudService implements IStorageService {
   try {
    /*
     * Access the bucket and file object to generate a pre-signed URL.
+    * Create a reference to the file in the specified bucket using the provided file name.
     */
    const bucket = this.storage.bucket(this.bucketName);
    const file = bucket.file(fileName);
 
    /*
     * Generate a pre-signed URL with specified actions, expiration, and content type.
+    * This URL allows users to upload or download the file within the specified time frame.
     */
    const [url] = await file.getSignedUrl({
     action: 'write',
@@ -169,11 +191,13 @@ export class GoogleCloudService implements IStorageService {
 
    /*
     * Return the generated pre-signed URL.
+    * This URL can be used to perform the specified action on the file.
     */
    return url;
   } catch (error) {
    /*
     * If an error occurs during URL generation, throw a PreSignedUrlException with the error message.
+    * This exception provides a specific error message indicating the URL generation failure.
     */
    throw new PreSignedUrlException(error.message);
   }
@@ -191,6 +215,7 @@ export class GoogleCloudService implements IStorageService {
   try {
    /*
     * Perform a PUT request to upload the file to the pre-signed URL.
+    * The file is uploaded to the specified URL with the provided content type.
     */
    await axios.put(url, file, {
     headers: {
@@ -200,6 +225,7 @@ export class GoogleCloudService implements IStorageService {
   } catch (error) {
    /*
     * If an error occurs during upload, throw an UploadException with the error message.
+    * This exception provides a specific error message indicating the upload failure.
     */
    throw new UploadException(error.message);
   }
@@ -217,12 +243,14 @@ export class GoogleCloudService implements IStorageService {
   try {
    /*
     * Access the bucket and file object to generate a pre-signed URL for file viewing.
+    * Create a reference to the file in the specified bucket using the provided file name.
     */
    const bucket = this.storage.bucket(this.bucketName);
    const file = bucket.file(fileName);
 
    /*
     * Generate a pre-signed URL for read access with specified expiration.
+    * This URL allows users to view the file within the specified time frame.
     */
    const [url] = await file.getSignedUrl({
     action: 'read',
@@ -231,11 +259,13 @@ export class GoogleCloudService implements IStorageService {
 
    /*
     * Return the generated pre-signed URL for file viewing.
+    * This URL can be used to access the file directly from the web.
     */
    return url;
   } catch (error) {
    /*
     * If an error occurs during URL generation, throw a PreSignedUrlException with the error message.
+    * This exception provides a specific error message indicating the URL generation failure.
     */
    throw new PreSignedUrlException(error.message);
   }
