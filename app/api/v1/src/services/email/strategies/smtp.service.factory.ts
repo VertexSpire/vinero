@@ -1,6 +1,7 @@
 // app/api/v1/src/services/email/strategies/smtp.service.factory.ts
 
 import { SMTPService } from './smtp.service';
+import { Logger } from '../../../services/logger/logger.service'; // Assuming logger.service.ts is the correct path
 
 /**
  * @class SMTPServiceFactory
@@ -29,13 +30,17 @@ export class SMTPServiceFactory {
   * @param {number} config.port - The SMTP port
   * @param {string} config.user - The SMTP user
   * @param {string} config.pass - The SMTP password
+  * @param {Logger} logger - The logger instance for logging
   * @returns {SMTPService} - Returns a new instance of SMTPService
   */
- public static createSMTPService(config: { host: string; port: number; user: string; pass: string }): SMTPService {
+ public static createSMTPService(
+  config: { host: string; port: number; user: string; pass: string },
+  logger: Logger,
+ ): SMTPService {
   /**
    * The new instance of SMTPService is created and returned with the provided configuration. This instance will be
    * able to send emails using the SMTP protocol, authenticated with the specified server details.
    */
-  return new SMTPService(config);
+  return new SMTPService(config, logger);
  }
 }

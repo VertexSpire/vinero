@@ -1,63 +1,88 @@
-// app/api/v1/src/services/email/email.service.ts
-
 import { EmailServiceInterface } from '../../interfaces/email-service.interface';
 import { EmailBuilder } from './email.builder';
 import { EmailServiceException } from '../../exception/email.exception';
+import { LoggerService } from '../../logger/logger.service';
 
 /**
  * @class EmailService
- * @description Service for sending emails using different strategies. This class provides a unified interface for
- * sending emails, regardless of the underlying email service provider. It uses the strategy pattern to select the
- * appropriate email service at runtime.
+ * @description This class handles the process of sending emails using a specified strategy. It logs the process of sending emails and handles any exceptions that may occur. The strategy for sending emails can be set dynamically at runtime.
+ * @property {EmailServiceInterface} strategy - The strategy pattern is used to allow different email sending mechanisms to be plugged in.
+ * @property {LoggerService} logger - Service used to log the email sending process and any errors.
+ * @method setStrategy - Sets the email sending strategy.
+ * @method sendEmail - Sends an email using the currently set strategy.
+ * @throws {EmailServiceException} - Throws an exception if the email sending process fails.
+ * @autor Wasif Farooq
  */
 export class EmailService {
  /**
-  * @property {EmailServiceInterface} strategy - The strategy to be used for sending emails. This property is set
-  * by the setStrategy method and determines which email service implementation (e.g., SMTPService, SendGridService)
-  * will be used to send emails. It implements the EmailServiceInterface, ensuring a consistent method signature
-  * for sending emails.
+  * @property {EmailServiceInterface} strategy - The strategy pattern is used to allow different email sending mechanisms to be plugged in.
+  * This private property holds the current email sending strategy.
   */
  private strategy: EmailServiceInterface;
 
  /**
+  * @property {LoggerService} logger - Service used to log the email sending process and any errors.
+  * This private property holds the logger instance used for logging.
+  */
+ private logger: LoggerService;
+
+ /**
+  * @constructor
+  * @param {LoggerService} logger - The logger service instance used for logging.
+  * This constructor initializes the EmailService with a logger service.
+  */
+ constructor(logger: LoggerService) {
+  /**
+   * Assigns the provided logger service to the logger property.
+   */
+  this.logger = logger;
+ }
+
+ /**
   * @method setStrategy
-  * @description Sets the email sending strategy. This method allows the client to specify which email service
-  * implementation should be used to send emails. By setting the strategy at runtime, the EmailService can dynamically
-  * switch between different email service providers.
-  * @param {EmailServiceInterface} strategy - The email sending strategy
+  * @description Sets the email sending strategy.
+  * @param {EmailServiceInterface} strategy - The email sending strategy to be used.
+  * This method allows the client to change the email sending strategy dynamically.
   */
  setStrategy(strategy: EmailServiceInterface) {
   /**
-   * Sets the strategy to be used for sending emails. This property is private to ensure that the strategy can only
-   * be set through this method, maintaining encapsulation and control over the email service configuration.
+   * Assigns the provided strategy to the strategy property.
    */
   this.strategy = strategy;
  }
 
  /**
   * @method sendEmail
-  * @description Sends an email using the selected strategy. This method delegates the email sending operation to
-  * the strategy set by the setStrategy method. It constructs the email payload from the provided EmailBuilder object
-  * and uses the strategy to send the email.
-  *
-  * The method captures any errors thrown by the strategy and wraps them in an EmailServiceException, providing a
-  * consistent error handling mechanism across different email service implementations.
-  *
-  * @param {EmailBuilder} email - The email object constructed using the EmailBuilder
-  * @returns {Promise<void>}
-  * @throws {EmailServiceException}
+  * @description Sends an email using the currently set strategy.
+  * @param {EmailBuilder} email - The email to be sent.
+  * @returns {Promise<void>} - A promise that resolves when the email has been sent.
+  * This method logs the process of sending an email, attempts to send the email using the current strategy, and logs the result. If an error occurs, it logs the error and throws an EmailServiceException.
+  * @throws {EmailServiceException} - Throws an exception if the email sending process fails.
   */
  async sendEmail(email: EmailBuilder): Promise<void> {
   try {
    /**
-    * Uses the selected strategy to send the email. The strategy is responsible for constructing the email payload
-    * and interacting with the underlying email service provider to send the email.
+    * Logs the start of the email sending process with the recipient and subject.
+    */
+   this.logger.info('Sending email', { to: email.to, subject: email.subject });
+
+   /**
+    * Attempts to send the email using the current strategy.
     */
    await this.strategy.sendEmail(email);
+
+   /**
+    * Logs the success of the email sending process with the recipient and subject.
+    */
+   this.logger.info('Email sent successfully', { to: email.to, subject: email.subject });
   } catch (error) {
    /**
-    * Throws an EmailServiceException if the email sending fails, encapsulating the error message. This provides
-    * a consistent error handling strategy, making it easier to manage and debug email sending failures.
+    * Logs the failure of the email sending process with the error message.
+    */
+   this.logger.error('Failed to send email', { error: error.message });
+
+   /**
+    * Throws an EmailServiceException with a detailed error message.
     */
    throw new EmailServiceException(`EmailService: Failed to send email - ${error.message}`);
   }
