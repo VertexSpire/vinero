@@ -1,105 +1,151 @@
-// src/services/token/token.service.ts
-
-import jwt from 'jsonwebtoken';
-import { ConfigService } from '../config/config.service';
+import jwt from 'jsonwebtoken'; // Importing the jsonwebtoken library to handle JWT operations.
+import { ConfigService } from '../config/config.service'; // Importing the ConfigService to access configuration values.
+import { ILogger } from '../logger/logger.interface'; // Importing the ILogger interface for logging.
 
 /**
  * @class TokenService
  * @description Service for handling JWT token-related operations. This service provides methods to generate and verify JWT tokens,
- * which are used for user authentication.
+ * which are used for user authentication. The service relies on a configuration service to retrieve the secret key used for signing the tokens,
+ * and a logger service to log relevant events such as token generation and verification.
+ * @property {ConfigService} configService - Instance of the ConfigService to access configuration values.
+ * @property {ILogger} logger - Instance of the ILogger to handle logging of events.
+ * @autor Wasif Farooq
  */
 export class TokenService {
  /**
-  * @property {ConfigService} configService - The ConfigService instance. This service is used to access configuration settings for JWT.
+  * @private
+  * @readonly
+  * @property {ConfigService} configService - Service to access application configuration values.
   */
  private readonly configService: ConfigService;
 
  /**
-  * @constructor
-  * @description Constructor for TokenService. It initializes the service with an instance of ConfigService.
-  *
-  * @param {ConfigService} configService - The ConfigService instance. This parameter provides the service for accessing configuration settings.
+  * @private
+  * @readonly
+  * @property {ILogger} logger - Service to log application events and errors.
   */
- constructor(configService: ConfigService) {
-  /**
-   * Assign the configuration service instance to the class property.
-   * This ensures that the configuration service can be used to access settings for JWT.
-   */
+ private readonly logger: ILogger;
+
+ /**
+  * @constructor
+  * @param {ConfigService} configService - Instance of ConfigService injected to access configuration settings.
+  * @param {ILogger} logger - Instance of ILogger injected to enable logging within the service.
+  * @description Initializes the TokenService with instances of ConfigService and ILogger.
+  */
+ constructor(configService: ConfigService, logger: ILogger) {
   this.configService = configService;
+  /**
+   * The configService parameter is assigned to the private property this.configService.
+   * This allows the TokenService to access configuration values needed for token operations.
+   */
+  this.logger = logger;
+  /**
+   * The logger parameter is assigned to the private property this.logger.
+   * This allows the TokenService to log important events and errors during its operations.
+   */
  }
 
  /**
+  * @public
   * @method generateToken
-  * @description Generate a JWT token for the provided payload. This method creates a new JWT token containing the specified payload.
-  *
-  * @param {Record<string, any>} payload - The data to be included in the token. This parameter provides the payload to be embedded in the token.
-  * @returns {string} - The generated JWT token. This token contains the encoded payload and can be used for authentication.
-  * @throws Error if the JWT secret key is not configured.
+  * @description Generates a JWT token using the provided payload and a secret key from configuration.
+  * @param {Record<string, any>} payload - The payload to be included in the JWT token.
+  * @returns {string} - The generated JWT token.
+  * @throws {Error} - Throws an error if the secret key is not configured.
   */
  public generateToken(payload: Record<string, any>): string {
-  /**
-   * Get the JWT secret key from the configuration service.
-   * This key is used to sign the token and ensure its integrity.
-   */
   const secret = this.configService.getValue<string>('jwtAuth.secretKey');
-
   /**
-   * Validate that the secret key is present.
-   * If the secret key is missing, throw an error.
+   * Retrieves the JWT secret key from the configuration service.
+   * The secret key is essential for signing the JWT token securely.
    */
+
   if (!secret) {
+   /**
+    * Checks if the secret key is configured.
+    * If the secret key is not available, it logs an error and throws an exception.
+    * This ensures that token generation does not proceed without the necessary secret key.
+    */
+   this.logger.error('JWT secret key is not configured');
    throw new Error('Incomplete JWT auth config');
   }
 
-  /**
-   * Define the options for signing the token.
-   * The token is set to expire in 1 hour.
-   */
   const options: jwt.SignOptions = {
-   expiresIn: '1h', // Adjust as needed
+   expiresIn: '1h',
+   /**
+    * Defines the options for the JWT token.
+    * The token is set to expire in 1 hour, which can be adjusted as needed.
+    * This option ensures the token has a limited validity period for security purposes.
+    */
   };
 
+  const token = jwt.sign(payload, secret, options);
   /**
-   * Sign and return the JWT token.
-   * The token is created using the payload, secret key, and options.
+   * Generates the JWT token using the given payload, secret key, and options.
+   * The jsonwebtoken library's sign method is used to create the token.
+   * The generated token is then returned to the caller.
    */
-  return jwt.sign(payload, secret, options);
+  this.logger.log('Generated JWT token');
+  /**
+   * Logs the successful generation of the JWT token.
+   * This helps in tracking the creation of tokens for debugging and monitoring purposes.
+   */
+  return token;
+  /**
+   * Returns the generated JWT token to the caller.
+   * The token can then be used for user authentication in the application.
+   */
  }
 
  /**
+  * @public
   * @method verifyToken
-  * @description Verify and decode a JWT token. This method checks the validity of the token and decodes its payload.
-  *
-  * @param {string} token - The JWT token to verify and decode. This parameter provides the token to be validated.
-  * @returns {Record<string, any> | null} - The decoded payload if the token is valid; otherwise, returns null. This payload contains the data embedded in the token.
-  * @throws Error if the JWT secret key is not configured.
+  * @description Verifies the provided JWT token using the secret key from configuration.
+  * @param {string} token - The JWT token to be verified.
+  * @returns {Record<string, any> | null} - The decoded payload if the token is valid, otherwise null.
+  * @throws {Error} - Throws an error if the secret key is not configured.
   */
  public verifyToken(token: string): Record<string, any> | null {
-  /**
-   * Get the JWT secret key from the configuration service.
-   * This key is used to verify the token's signature and ensure its integrity.
-   */
   const secret = this.configService.getValue<string>('jwtAuth.secretKey');
-
   /**
-   * Validate that the secret key is present.
-   * If the secret key is missing, throw an error.
+   * Retrieves the JWT secret key from the configuration service.
+   * The secret key is essential for verifying the JWT token's authenticity.
    */
+
   if (!secret) {
+   /**
+    * Checks if the secret key is configured.
+    * If the secret key is not available, it logs an error and throws an exception.
+    * This ensures that token verification does not proceed without the necessary secret key.
+    */
+   this.logger.error('JWT secret key is not configured');
    throw new Error('Incomplete JWT auth config');
   }
 
-  /**
-   * Attempt to verify and decode the token.
-   * If the token is valid, return the decoded payload.
-   * If the token is invalid or expired, return null.
-   */
   try {
    const decoded = jwt.verify(token, secret) as Record<string, any>;
+   /**
+    * Attempts to verify the JWT token using the secret key.
+    * If the verification is successful, it logs the event and returns the decoded payload.
+    * The decoded payload contains the original data that was signed into the token.
+    */
+   this.logger.log('Verified JWT token');
    return decoded;
+   /**
+    * Returns the decoded payload to the caller if the token is valid.
+    * The decoded payload can then be used to authenticate the user and access their information.
+    */
   } catch (error) {
-   // Token is invalid or expired
+   this.logger.warn('Invalid or expired JWT token');
+   /**
+    * If the token verification fails (e.g., the token is invalid or expired), it logs a warning.
+    * This helps in identifying issues with token usage, such as attempted access with an expired token.
+    */
    return null;
+   /**
+    * Returns null to indicate that the token is not valid.
+    * This prevents unauthorized access and ensures that only valid tokens are accepted.
+    */
   }
  }
 }
