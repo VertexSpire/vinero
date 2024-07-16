@@ -1,6 +1,6 @@
-// src/factories/permission.repository.factory.ts
+// src/factories/permission/permission.repository.factory.ts
 
-import { PermissionRepository } from '../repositories/permission.repository'; // Importing the PermissionRepository to create its instances
+import { PermissionRepository } from '../repositories/permission/permission.repository'; // Importing the PermissionRepository to create its instances
 import { LoggerServiceFactory } from '../factories/logger.service.factory'; // Importing the LoggerServiceFactory to create logger instances
 
 /**

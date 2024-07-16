@@ -1,4 +1,4 @@
-import { UserRepository } from '../repositories/user.repository';
+import { UserRepository } from '../repositories/user/user.repository';
 import { LoggerServiceFactory } from './logger.service.factory';
 
 /**

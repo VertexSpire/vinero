@@ -1,4 +1,4 @@
-import { RoleRepository } from '../repositories/role.repository';
+import { RoleRepository } from '../repositories/role/role.repository';
 import { LoggerServiceFactory } from './logger.service.factory';
 
 /**

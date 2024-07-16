@@ -1,6 +1,6 @@
 // src/services/user/user.service.ts
 
-import { UserRepository } from '../../repositories/user.repository';
+import { UserRepository } from '../../repositories/user/user.repository';
 
 /**
  * @class UserService

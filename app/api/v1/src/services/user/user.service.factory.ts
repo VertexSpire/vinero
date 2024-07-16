@@ -1,7 +1,7 @@
 // src/services/user/user.service.factory.ts
 
 import { UserService } from './user.service';
-import { UserRepositoryFactory } from '../../repositories/user.repository.factory';
+import { UserRepositoryFactory } from '../../repositories/user/user.repository.factory';
 
 /**
  * @class UserServiceFactory

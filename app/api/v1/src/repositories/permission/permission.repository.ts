@@ -1,4 +1,4 @@
-// src/repositories/permission.repository.ts
+// src/repositories/permission/permission.repository.ts
 
 import { PermissionModel } from '../models/permission.model'; // Importing the PermissionModel for interacting with the permissions collection in the database
 import { Permission } from '../common/interfaces/permission.interface'; // Importing the Permission interface for type checking
